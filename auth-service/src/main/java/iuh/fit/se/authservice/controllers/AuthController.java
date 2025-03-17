@@ -14,13 +14,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -98,5 +96,16 @@ public class AuthController {
         System.out.println(request.getRefreshToken());
         authService.logout(request.getRefreshToken());
         return ResponseEntity.ok("Logout successful");
+    }
+
+    @GetMapping("/all-by-role/{role}")
+    public ResponseEntity<List<Long>> getUserIdsByRole(@PathVariable("role") String role){
+        List<Long> userIds = authService.getUserIdsByRole(role);
+        return ResponseEntity.ok(userIds);
+    }
+    @GetMapping("/role/{userId}")
+    public ResponseEntity<String> getRoleByUserId(@PathVariable("userId") Long userId){
+        String role = authService.getRoleByUserId(userId);
+        return ResponseEntity.ok(role);
     }
 }

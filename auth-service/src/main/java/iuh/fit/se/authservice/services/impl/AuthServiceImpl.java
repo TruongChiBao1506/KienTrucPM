@@ -1,9 +1,11 @@
 package iuh.fit.se.authservice.services.impl;
 
 import iuh.fit.se.authservice.configs.JwtService;
+import iuh.fit.se.authservice.events.publishers.UserEventPublisher;
 import iuh.fit.se.authservice.dtos.AuthRequest;
 import iuh.fit.se.authservice.dtos.AuthResponse;
 import iuh.fit.se.authservice.dtos.RegisterRequest;
+import iuh.fit.se.authservice.events.dtos.UserProfileCreatedEvent;
 import iuh.fit.se.authservice.entities.RefreshToken;
 import iuh.fit.se.authservice.entities.Role;
 import iuh.fit.se.authservice.entities.User;
@@ -17,9 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -37,6 +37,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private RefreshTokenService refreshTokenService; // Thêm RefreshTokenService
+
+    @Autowired
+    private UserEventPublisher userEventPublisher;
 
     @Override
     public AuthResponse login(AuthRequest request) {
@@ -88,19 +91,16 @@ public class AuthServiceImpl implements AuthService {
         // Tạo user mới
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setFullname(request.getFullname());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
-        user.setDob(request.getDob());
-        user.setPhone(request.getPhone());
-        user.setAddress(request.getAddress());
-        user.setGender(request.isGender());
         user.setRole(request.getRole() != null ? request.getRole() : Role.USER);
 
         userRepository.save(user);
-
-//        String accessToken = jwtService.generateAccessToken(user.getUsername());
-//        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUsername());
+        UserProfileCreatedEvent event = new UserProfileCreatedEvent(
+                user.getId(), user.getUsername(), request.getFullname(), request.getDob() != null ? request.getDob() : new Date(),
+                request.getPhone(), request.getAddress() != null ? request.getAddress() : "No address provided", request.isGender()
+        );
+        userEventPublisher.publishUserProfileCreated(event);
 
         // ✅ Trả về thông tin user + token
         response.put("status", HttpStatus.OK.value());
@@ -137,5 +137,15 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
 
         refreshTokenService.deleteByUser(refreshToken.getUser()); // Xóa refresh token của user
+    }
+
+    @Override
+    public List<Long> getUserIdsByRole(String role) {
+        return userRepository.findByRole(Role.valueOf(role)).stream().map(User::getId).toList();
+    }
+
+    @Override
+    public String getRoleByUserId(Long userId) {
+        return userRepository.findById(userId).map(user -> user.getRole().name()).orElse(null);
     }
 }
