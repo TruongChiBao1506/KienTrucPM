@@ -13,10 +13,21 @@ public class CorsConfig {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(Arrays.asList("*"));
-        corsConfig.setMaxAge(3600L);
+        //Chỉ định các nguồn hợp lệ
+        corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:8080"));
+        corsConfig.setAllowCredentials(true); // Cho phép gửi credentials (cookies, authorization headers)
+
+        //Cho phép tất cả phương thức HTTP
         corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        //Cho phép tất cả headers
         corsConfig.setAllowedHeaders(Arrays.asList("*"));
+
+        //Expose các headers quan trọng (nếu có JWT hoặc authentication)
+        corsConfig.addExposedHeader("Authorization");
+
+        //Giữ cấu hình trong 1 giờ
+        corsConfig.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig);

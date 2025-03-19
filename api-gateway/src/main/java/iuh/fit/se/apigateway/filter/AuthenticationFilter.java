@@ -23,7 +23,12 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             "/api/auth/login",
             "/api/auth/register",
             "/api/auth/refresh",
-            "/api/auth/logout"
+            "/api/auth/logout",
+            "/swagger-ui",
+            "/swagger-ui/**",
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/webjars/**"
     );
 
     public AuthenticationFilter() {
@@ -37,7 +42,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             String path = exchange.getRequest().getURI().getPath();
 
             // Bỏ qua kiểm tra JWT nếu endpoint nằm trong danh sách OPEN_ENDPOINTS
-            if (OPEN_ENDPOINTS.contains(path)) {
+            if (OPEN_ENDPOINTS.stream().anyMatch(path::startsWith)) {
                 return chain.filter(exchange);
             }
 
