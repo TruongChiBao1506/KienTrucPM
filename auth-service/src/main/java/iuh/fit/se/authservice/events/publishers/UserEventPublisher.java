@@ -29,7 +29,7 @@ public class UserEventPublisher {
             // Gửi JSON String đến Kafka
             kafkaTemplate.send("user.topic", json);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Lỗi khi tạo JSON", e);
         }
     }
     public void publishUserEmailResponse(UserEmailUpdateEvent event){
@@ -43,7 +43,21 @@ public class UserEventPublisher {
             kafkaTemplate.send("user.topic", json);
         }
         catch (Exception e){
-            e.printStackTrace();
+            throw new RuntimeException("Lỗi khi tạo JSON", e);
+        }
+    }
+    public void publishUserAsyncElasticsearch(Long id){
+        try {
+            ObjectNode jsonNode = objectMapper.createObjectNode();
+            jsonNode.put("eventType", "AsyncElasticsearch");
+            jsonNode.put("userId", id);
+            String json = objectMapper.writeValueAsString(jsonNode);
+            System.out.println("Sending JSON to Kafka: " + json);
+
+            kafkaTemplate.send("user.topic", json);
+        }
+        catch (Exception e){
+            throw new RuntimeException("Lỗi khi tạo JSON", e);
         }
     }
 }

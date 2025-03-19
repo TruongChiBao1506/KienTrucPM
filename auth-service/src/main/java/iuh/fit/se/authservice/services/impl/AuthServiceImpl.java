@@ -9,6 +9,7 @@ import iuh.fit.se.authservice.events.dtos.UserProfileCreatedEvent;
 import iuh.fit.se.authservice.entities.RefreshToken;
 import iuh.fit.se.authservice.entities.Role;
 import iuh.fit.se.authservice.entities.User;
+import iuh.fit.se.authservice.repository.RefreshTokenRepository;
 import iuh.fit.se.authservice.repository.UserRepository;
 import iuh.fit.se.authservice.services.AuthService;
 import iuh.fit.se.authservice.services.RefreshTokenService;
@@ -28,6 +29,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -100,9 +104,15 @@ public class AuthServiceImpl implements AuthService {
                 user.getId(), user.getUsername(), request.getFullname(), request.getDob() != null ? request.getDob() : new Date(),
                 request.getPhone(), request.getAddress() != null ? request.getAddress() : "No address provided", request.isGender()
         );
-        userEventPublisher.publishUserProfileCreated(event);
-
-        // ✅ Trả về thông tin user + token
+        try{
+            userEventPublisher.publishUserProfileCreated(event);
+        }
+        catch (Exception e) {
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Lỗi khi tạo tài khoản: " + e.getMessage());
+            return response;
+        }
+        //Trả về thông tin user + token
         response.put("status", HttpStatus.OK.value());
         response.put("message", "Đăng ký tài khoản thành công");
 //        response.put("accessToken", accessToken);
@@ -147,5 +157,27 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String getRoleByUserId(Long userId) {
         return userRepository.findById(userId).map(user -> user.getRole().name()).orElse(null);
+    }
+
+    @Override
+    public void deleteAuthUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("Không tìm thấy người dùng với ID: " + id);
+        }
+//        if (userRepository.findById(id).get().getOrders().size() > 0) {
+//            throw new RuntimeException("Không thể xóa người dùng đã đặt hàng");
+//        }
+        refreshTokenRepository.deleteByUser(userRepository.findById(id).get());
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User findById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

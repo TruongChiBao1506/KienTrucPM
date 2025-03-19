@@ -1,11 +1,10 @@
 package iuh.fit.se.authservice.controllers;
 
 import iuh.fit.se.authservice.configs.JwtService;
-import iuh.fit.se.authservice.dtos.AuthRequest;
-import iuh.fit.se.authservice.dtos.AuthResponse;
-import iuh.fit.se.authservice.dtos.RefreshRequest;
-import iuh.fit.se.authservice.dtos.RegisterRequest;
+import iuh.fit.se.authservice.dtos.*;
 import iuh.fit.se.authservice.entities.RefreshToken;
+import iuh.fit.se.authservice.entities.Role;
+import iuh.fit.se.authservice.entities.User;
 import iuh.fit.se.authservice.services.AuthService;
 import iuh.fit.se.authservice.services.RefreshTokenService;
 import jakarta.validation.Valid;
@@ -13,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +30,10 @@ public class AuthController {
     private RefreshTokenService refreshTokenService;
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     /**
      * Xử lý đăng ký người dùng
@@ -107,5 +111,93 @@ public class AuthController {
     public ResponseEntity<String> getRoleByUserId(@PathVariable("userId") Long userId){
         String role = authService.getRoleByUserId(userId);
         return ResponseEntity.ok(role);
+    }
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Map<String, Object>> deleteAuthUser(@PathVariable("id") Long id){
+        authService.deleteAuthUser(id);
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", HttpStatus.OK.value());
+        response.put("message", "Xóa người dùng thành công");
+        return ResponseEntity.ok(response);
+    }
+    @PostMapping("/add")
+    public ResponseEntity<Map<String, Object>> addAuthUser(@RequestBody AuthUser authUser){
+        Map<String, Object> response = new HashMap<>();
+        try{
+            User user = new User();
+            user.setId(authUser.getId());
+            user.setUsername(authUser.getUsername());
+            user.setPassword(passwordEncoder.encode(authUser.getPassword()));
+            user.setEmail(authUser.getEmail());
+            try{
+                user.setRole(Role.valueOf(authUser.getRole()));
+            }catch (IllegalArgumentException e){
+                response.put("status", HttpStatus.BAD_REQUEST.value());
+                response.put("message", "Role không hợp lệ: " + authUser.getRole());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+            authService.save(user);
+            response.put("status", HttpStatus.OK.value());
+            response.put("message", user.getId());
+            return ResponseEntity.ok(response);
+        }
+        catch (Exception e){
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Lỗi khi thêm người dùng: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+    @PostMapping("/update")
+    public ResponseEntity<Map<String, Object>> updateAuthUser(@RequestBody AuthUser authUser){
+        Map<String, Object> response = new HashMap<>();
+        try{
+            User user = authService.findById(authUser.getId());
+            if(user == null){
+                response.put("status", HttpStatus.NOT_FOUND.value());
+                response.put("message", "Không tìm thấy người dùng với ID: " + authUser.getId());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            else {
+                user.setUsername(authUser.getUsername());
+                if (authUser.getPassword() != null && !authUser.getPassword().isEmpty() && !authUser.getPassword().isBlank() && !authUser.getPassword().equals(user.getPassword())) {
+                    user.setPassword(passwordEncoder.encode(authUser.getPassword()));
+                }
+                user.setEmail(authUser.getEmail());
+                authService.save(user);
+                response.put("status", HttpStatus.OK.value());
+                response.put("message", "Cập nhật người dùng thành công");
+                return ResponseEntity.ok(response);
+            }
+        }
+        catch (Exception e){
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Lỗi khi cập nhật người dùng: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+    @GetMapping("/user/{id}")
+    public  ResponseEntity<Map<String, Object>> getAuthUserById(@PathVariable("id") Long id){
+        try{
+            User user = authService.findById(id);
+            if (user == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("status", HttpStatus.NOT_FOUND.value());
+                response.put("message", "Không tìm thấy người dùng với ID: " + id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            else {
+                System.out.println(user.toString());
+                Map<String, Object> response = new HashMap<>();
+                response.put("status", HttpStatus.OK.value());
+                response.put("data", user);
+                return ResponseEntity.ok(response);
+            }
+        }
+        catch (Exception e){
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Lỗi khi lấy thông tin người dùng: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }
