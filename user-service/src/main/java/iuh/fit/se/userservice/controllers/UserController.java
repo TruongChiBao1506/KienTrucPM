@@ -1,7 +1,9 @@
 package iuh.fit.se.userservice.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import iuh.fit.se.userservice.dtos.AuthUser;
+import iuh.fit.se.userservice.dtos.AuthUserChangePassword;
 import iuh.fit.se.userservice.dtos.UserDTO;
 import iuh.fit.se.userservice.dtos.UserProfileDTO;
 import iuh.fit.se.userservice.entities.User;
@@ -362,5 +364,34 @@ public class UserController {
             @RequestParam(required = false) String gender,
             @RequestParam(required = false) String role) throws IOException {
         return userService.searchUsers(keyword, gender, role);
+    }
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, Object>> handleChangePassword(@RequestBody AuthUserChangePassword authUserChangePassword) {
+        Map<String, Object> response = new LinkedHashMap<>();
+
+        try {
+            ResponseEntity<Map<String, Object>> authResponse = authServiceClient.changePassword(authUserChangePassword);
+            return ResponseEntity.ok(authResponse.getBody()); // Trả về phản hồi từ auth-service nếu thành công
+        } catch (FeignException.BadRequest e) {
+            // Lấy nội dung phản hồi từ auth-service
+            String responseBody = e.contentUTF8();
+            response.put("status", HttpStatus.BAD_REQUEST.value());
+            response.put("message", responseBody.contains("Mật khẩu cũ không đúng") ? "Mật khẩu cũ không đúng" : "Yêu cầu không hợp lệ");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (FeignException.NotFound e) {
+            response.put("status", HttpStatus.NOT_FOUND.value());
+            response.put("message", "Người dùng không tồn tại");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (FeignException e) {
+            // Xử lý các lỗi khác từ auth-service
+            response.put("status", e.status());
+            response.put("message", "Lỗi từ AuthService: " + e.getMessage());
+            return ResponseEntity.status(e.status()).body(response);
+        } catch (Exception e) {
+            // Xử lý lỗi hệ thống
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Lỗi hệ thống, vui lòng thử lại sau!");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }

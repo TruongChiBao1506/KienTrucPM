@@ -1,6 +1,7 @@
 package iuh.fit.se.userservice.feign;
 
 import iuh.fit.se.userservice.dtos.AuthUser;
+import iuh.fit.se.userservice.dtos.AuthUserChangePassword;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,4 +23,6 @@ public interface AuthServiceClient {
     ResponseEntity<Map<String, Object>> updateAuthUser(@RequestBody AuthUser authUser);
     @GetMapping("/user/{id}")
     ResponseEntity<Map<String, Object>> getAuthUser(@PathVariable("id") Long id);
+    @PostMapping("/change-password")
+    ResponseEntity<Map<String, Object>> changePassword(@RequestBody AuthUserChangePassword authUserChangePassword);
 }
