@@ -1,6 +1,7 @@
 package iuh.fit.se.authservice.services.impl;
 
 import iuh.fit.se.authservice.configs.JwtService;
+import iuh.fit.se.authservice.dtos.AuthUserChangePassword;
 import iuh.fit.se.authservice.events.publishers.UserEventPublisher;
 import iuh.fit.se.authservice.dtos.AuthRequest;
 import iuh.fit.se.authservice.dtos.AuthResponse;
@@ -9,6 +10,7 @@ import iuh.fit.se.authservice.events.dtos.UserProfileCreatedEvent;
 import iuh.fit.se.authservice.entities.RefreshToken;
 import iuh.fit.se.authservice.entities.Role;
 import iuh.fit.se.authservice.entities.User;
+import iuh.fit.se.authservice.repository.RefreshTokenRepository;
 import iuh.fit.se.authservice.repository.UserRepository;
 import iuh.fit.se.authservice.services.AuthService;
 import iuh.fit.se.authservice.services.RefreshTokenService;
@@ -18,6 +20,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -40,6 +43,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private UserEventPublisher userEventPublisher;
+
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Override
     public AuthResponse login(AuthRequest request) {
@@ -147,5 +153,40 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String getRoleByUserId(Long userId) {
         return userRepository.findById(userId).map(user -> user.getRole().name()).orElse(null);
+    }
+    @Override
+    public void deleteAuthUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("Không tìm thấy người dùng với ID: " + id);
+        }
+//        if (userRepository.findById(id).get().getOrders().size() > 0) {
+//            throw new RuntimeException("Không thể xóa người dùng đã đặt hàng");
+//        }
+        refreshTokenRepository.deleteByUser(userRepository.findById(id).get());
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User findById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+    @Override
+    public void changePassword(AuthUserChangePassword authUserChangePassword) {
+        Optional<User> user = userRepository.findByUsername(authUserChangePassword.getUsername());
+        if (user.isPresent()) {
+            if (passwordEncoder.matches(authUserChangePassword.getPassword(), user.get().getPassword())) {
+                user.get().setPassword(passwordEncoder.encode(authUserChangePassword.getNewPassword()));
+                userRepository.save(user.get());
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu cũ không đúng");
+            }
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng");
+        }
     }
 }
