@@ -15,6 +15,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -30,6 +31,8 @@ public class AuthController {
     private RefreshTokenService refreshTokenService;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -197,6 +200,24 @@ public class AuthController {
             Map<String, Object> response = new HashMap<>();
             response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.put("message", "Lỗi khi lấy thông tin người dùng: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, Object>> changePassword(@RequestBody AuthUserChangePassword authUserChangePassword){
+        Map<String, Object> response = new LinkedHashMap<>();
+        try{
+            authService.changePassword(authUserChangePassword);
+            response.put("status", HttpStatus.OK.value());
+            response.put("message", "Password changed successfully");
+            return ResponseEntity.ok(response);
+        } catch (ResponseStatusException e) { // Bắt lỗi cụ thể hơn
+            response.put("status", e.getStatusCode().value());
+            response.put("message", e.getReason());
+            return ResponseEntity.status(e.getStatusCode()).body(response);
+        } catch (Exception e) {
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value()); // Tránh lỗi 500 không mong muốn
+            response.put("message", "Lỗi hệ thống, vui lòng thử lại sau!");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

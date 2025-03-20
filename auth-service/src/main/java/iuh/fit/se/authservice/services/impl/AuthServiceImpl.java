@@ -1,6 +1,7 @@
 package iuh.fit.se.authservice.services.impl;
 
 import iuh.fit.se.authservice.configs.JwtService;
+import iuh.fit.se.authservice.dtos.AuthUserChangePassword;
 import iuh.fit.se.authservice.events.publishers.UserEventPublisher;
 import iuh.fit.se.authservice.dtos.AuthRequest;
 import iuh.fit.se.authservice.dtos.AuthResponse;
@@ -19,6 +20,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -158,7 +160,6 @@ public class AuthServiceImpl implements AuthService {
     public String getRoleByUserId(Long userId) {
         return userRepository.findById(userId).map(user -> user.getRole().name()).orElse(null);
     }
-
     @Override
     public void deleteAuthUser(Long id) {
         if (!userRepository.existsById(id)) {
@@ -179,5 +180,19 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+    @Override
+    public void changePassword(AuthUserChangePassword authUserChangePassword) {
+        Optional<User> user = userRepository.findByUsername(authUserChangePassword.getUsername());
+        if (user.isPresent()) {
+            if (passwordEncoder.matches(authUserChangePassword.getPassword(), user.get().getPassword())) {
+                user.get().setPassword(passwordEncoder.encode(authUserChangePassword.getNewPassword()));
+                userRepository.save(user.get());
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu cũ không đúng");
+            }
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng");
+        }
     }
 }

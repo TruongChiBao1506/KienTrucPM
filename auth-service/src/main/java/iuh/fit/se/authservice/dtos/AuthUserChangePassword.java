@@ -9,10 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthUser {
-    private Long id;
+public class AuthUserChangePassword {
     private String username;
     private String password;
-    private String email;
-    private String role;
+    private String newPassword;
 }
