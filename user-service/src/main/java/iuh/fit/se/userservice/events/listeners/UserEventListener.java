@@ -69,6 +69,7 @@ public class UserEventListener {
         user.setGender(event.isGender());
 
         userRepository.save(user);
+        userIndexService.addUserToElasticsearch(event.getUserId());
 
     }
     public CompletableFuture<Boolean> waitForEmailUpdate(Long userId) {

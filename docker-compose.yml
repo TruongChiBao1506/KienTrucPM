@@ -1,8 +1,13 @@
+<<<<<<< HEAD
 version: "3.8"
 services:
   # =================== #
   # 📌 KAFKA SERVICES  #
   # =================== #
+=======
+version: '3.8'
+services:
+>>>>>>> origin/product
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     container_name: zookeeper
@@ -17,7 +22,11 @@ services:
     depends_on:
       - zookeeper
     ports:
+<<<<<<< HEAD
       - "9092:9092"
+=======
+      - "9092:9092"   # Mở cổng Kafka cho máy host
+>>>>>>> origin/product
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -25,6 +34,7 @@ services:
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+<<<<<<< HEAD
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   # ========================= #
@@ -57,3 +67,6 @@ services:
 volumes:
   elasticsearch-data:
     driver: local
+=======
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+>>>>>>> origin/product
