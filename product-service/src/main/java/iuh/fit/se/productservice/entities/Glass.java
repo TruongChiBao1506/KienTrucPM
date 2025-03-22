@@ -34,18 +34,6 @@ public class Glass {
 	private boolean gender;
 	private int stock;
 	private String description;
-	@OneToMany(mappedBy = "modifyProductId.glass")
-	@JsonIgnore
-	private List<ModifyProduct> modifyProducts;
-
-	
-	@OneToMany(mappedBy = "orderItemId.product")
-	@JsonIgnore
-	private List<OrderItem> orderItems;
-	
-	@OneToMany(mappedBy = "reviewId.productId")
-	@JsonIgnore
-	private List<Review> reviews;
 	
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "specifications_id")
@@ -179,38 +167,7 @@ public class Glass {
 		this.description = description;
 	}
 	
-	public List<ModifyProduct> getModifyProducts() {
-		return modifyProducts;
-	}
 
-	public void setModifyProducts(List<ModifyProduct> modifyProducts) {
-		this.modifyProducts = modifyProducts;
-	}
-
-	
-	public int getStock() {
-		return stock;
-	}
-
-	public void setStock(int stock) {
-		this.stock = stock;
-	}
-
-	public List<OrderItem> getOrderItems() {
-		return orderItems;
-	}
-
-	public void setOrderItems(List<OrderItem> orderItems) {
-		this.orderItems = orderItems;
-	}
-
-	public List<Review> getReviews() {
-		return reviews;
-	}
-
-	public void setReviews(List<Review> reviews) {
-		this.reviews = reviews;
-	}
 
 	public String getColorName() {
 		return colorName;

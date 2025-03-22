@@ -1,29 +1,25 @@
 package iuh.fit.se.productservice.Services.impl;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
+import iuh.fit.se.productservice.Repositories.SpecificationRepository;
+import iuh.fit.se.productservice.Services.CategoryService;
 import iuh.fit.se.productservice.Services.GlassService;
-//import org.modelmapper.ModelMapper;
+
+import iuh.fit.se.productservice.dtos.GlassesDTO;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import iuh.fit.se.productservice.dtos.FilterRequest;
-import iuh.fit.se.productservice.dtos.GlassDTO;
 import iuh.fit.se.productservice.dtos.GlassStatistic;
 import iuh.fit.se.productservice.entities.Category;
-import iuh.fit.se.productservice.entities.FrameSize;
 import iuh.fit.se.productservice.entities.Glass;
-import iuh.fit.se.productservice.entities.Specifications;
 //import iuh.fit.se.productservice.exceptions.EntityNotFoundException;
 import iuh.fit.se.productservice.Repositories.CategoryRepository;
 import iuh.fit.se.productservice.Repositories.FrameSizeRepository;
 import iuh.fit.se.productservice.Repositories.GlassRepository;
-import iuh.fit.se.productservice.Repositories.SpecificationsRepository;
-import iuh.fit.se.productservice.Services.GlassService;
-import jakarta.persistence.criteria.Predicate;
+import org.modelmapper.ModelMapper;
 
 @Service
 public class GlassServiceImpl implements GlassService {
@@ -35,13 +31,16 @@ public class GlassServiceImpl implements GlassService {
     private CategoryRepository categoryRepository;
 
     @Autowired
-    private SpecificationsRepository specificationsRepository;
+    private SpecificationRepository specificationRepository;
 
     @Autowired
     private FrameSizeRepository frameSizeRepository;
 
-//    @Autowired
-//    private ModelMapper modelMapper;
+    @Autowired
+    private ModelMapper modelMapper;
+
+    @Autowired
+    private CategoryService categoryService ;
 
     @Override
     public List<Glass> findAll() {
@@ -58,54 +57,54 @@ public class GlassServiceImpl implements GlassService {
         return glassRepository.findByCategoryAndGender(categoryId, gender);
     }
 
-    @Override
-    public List<GlassDTO> findByCategoryAndGenderAndFilter(Long categoryId, boolean gender, FilterRequest filter) {
-        return glassRepository.findAll((root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            // Always apply category and gender filters
-            predicates.add(criteriaBuilder.equal(root.get("category").get("id"), categoryId));
-            predicates.add(criteriaBuilder.equal(root.get("gender"), gender));
-
-            if (filter != null) {
-                // Price range filter
-                if (filter.getMinPrice() != null && !filter.getMinPrice().isEmpty()) {
-                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"),
-                            Double.parseDouble(filter.getMinPrice())));
-                }
-                if (filter.getMaxPrice() != null && !filter.getMaxPrice().isEmpty()) {
-                    predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"),
-                            Double.parseDouble(filter.getMaxPrice())));
-                }
-
-                // Brand filter
-                if (filter.getBrands() != null && !filter.getBrands().isEmpty()) {
-                    List<String> brands = List.of(filter.getBrands().split(","));
-                    predicates.add(root.get("brand").in(brands));
-                }
-
-                // Shape filter
-                if (filter.getShapes() != null && !filter.getShapes().isEmpty()) {
-                    List<String> shapes = List.of(filter.getShapes().split(","));
-                    predicates.add(root.get("specifications").get("shape").in(shapes));
-                }
-
-                // Material filter
-                if (filter.getMaterials() != null && !filter.getMaterials().isEmpty()) {
-                    List<String> materials = List.of(filter.getMaterials().split(","));
-                    predicates.add(root.get("specifications").get("material").in(materials));
-                }
-
-                // Color filter
-                if (filter.getColors() != null && !filter.getColors().isEmpty()) {
-                    List<String> colors = List.of(filter.getColors().split(","));
-                    predicates.add(root.get("colorName").in(colors));
-                }
-            }
-
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-        }).stream().map(this::convertToGlassDTO).toList();
-    }
+//    @Override
+//    public List<GlassDTO> findByCategoryAndGenderAndFilter(Long categoryId, boolean gender, FilterRequest filter) {
+//        return glassRepository.findAll((root, query, criteriaBuilder) -> {
+//            List<Predicate> predicates = new ArrayList<>();
+//
+//            // Always apply category and gender filters
+//            predicates.add(criteriaBuilder.equal(root.get("category").get("id"), categoryId));
+//            predicates.add(criteriaBuilder.equal(root.get("gender"), gender));
+//
+//            if (filter != null) {
+//                // Price range filter
+//                if (filter.getMinPrice() != null && !filter.getMinPrice().isEmpty()) {
+//                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"),
+//                            Double.parseDouble(filter.getMinPrice())));
+//                }
+//                if (filter.getMaxPrice() != null && !filter.getMaxPrice().isEmpty()) {
+//                    predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"),
+//                            Double.parseDouble(filter.getMaxPrice())));
+//                }
+//
+//                // Brand filter
+//                if (filter.getBrands() != null && !filter.getBrands().isEmpty()) {
+//                    List<String> brands = List.of(filter.getBrands().split(","));
+//                    predicates.add(root.get("brand").in(brands));
+//                }
+//
+//                // Shape filter
+//                if (filter.getShapes() != null && !filter.getShapes().isEmpty()) {
+//                    List<String> shapes = List.of(filter.getShapes().split(","));
+//                    predicates.add(root.get("specifications").get("shape").in(shapes));
+//                }
+//
+//                // Material filter
+//                if (filter.getMaterials() != null && !filter.getMaterials().isEmpty()) {
+//                    List<String> materials = List.of(filter.getMaterials().split(","));
+//                    predicates.add(root.get("specifications").get("material").in(materials));
+//                }
+//
+//                // Color filter
+//                if (filter.getColors() != null && !filter.getColors().isEmpty()) {
+//                    List<String> colors = List.of(filter.getColors().split(","));
+//                    predicates.add(root.get("colorName").in(colors));
+//                }
+//            }
+//
+//            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+//        }).stream().map(this::convertToGlassDTO).toList();
+//    }
 
     @Override
     public Glass findById(Long id) {
@@ -115,7 +114,7 @@ public class GlassServiceImpl implements GlassService {
 
     @Override
     @Transactional
-    public Glass save(Glass glass) {
+    public Glass save(@Valid Glass glass) {
         return glassRepository.save(glass);
     }
 
@@ -150,55 +149,25 @@ public class GlassServiceImpl implements GlassService {
           return null;
     }
 
-    @Override
     @Transactional
-    public Glass update(Long id, Glass updatedGlass) {
-        Glass existingGlass = findById(id);
-
-        // Update basic fields
-        existingGlass.setName(updatedGlass.getName());
-        existingGlass.setBrand(updatedGlass.getBrand());
-        existingGlass.setPrice(updatedGlass.getPrice());
-        existingGlass.setColorName(updatedGlass.getColorName());
-        existingGlass.setColorCode(updatedGlass.getColorCode());
-        existingGlass.setImageFrontUrl(updatedGlass.getImageFrontUrl());
-        existingGlass.setImageSideUrl(updatedGlass.getImageSideUrl());
-        existingGlass.setGender(updatedGlass.isGender());
-        existingGlass.setStock(updatedGlass.getStock());
-        existingGlass.setDescription(updatedGlass.getDescription());
-
-        // Update category if provided
-        if (updatedGlass.getCategory() != null && updatedGlass.getCategory().getId() != null) {
-            Category category = categoryRepository.findById(updatedGlass.getCategory().getId())
-                    .orElseThrow();
-            existingGlass.setCategory(category);
+    @Override
+    public GlassesDTO update(Long id, GlassesDTO glass) {
+        if (this.findById(id) == null) {
+            return null;
         }
+        // Update
+        Glass glass1 = this.convertToEntity(new GlassesDTO());
+        System.out.println(glass);
+        Category category = categoryService.findById(glass.getCategory().getId());
+        glass.setCategory(category);
 
-        // Update specifications if provided
-        if (updatedGlass.getSpecifications() != null) {
-            Specifications specs = existingGlass.getSpecifications();
-            if (specs == null) {
-                specs = new Specifications();
-            }
-            specs.setMaterial(updatedGlass.getSpecifications().getMaterial());
-            specs.setShape(updatedGlass.getSpecifications().getShape());
-            existingGlass.setSpecifications(specs);
-        }
+        glassRepository.save(glass1);
+        return this.convertToDTO(glass1);
+    }
 
-        // Update frameSize if provided
-        if (updatedGlass.getFrameSize() != null) {
-            FrameSize frameSize = existingGlass.getFrameSize();
-            if (frameSize == null) {
-                frameSize = new FrameSize();
-            }
-            frameSize.setLensWidth(updatedGlass.getFrameSize().getLensWidth());
-            frameSize.setLensHeight(updatedGlass.getFrameSize().getLensHeight());
-//            frameSize.setBridgeWidth(updatedGlass.getFrameSize().getBridgeWidth());
-            frameSize.setTempleLength(updatedGlass.getFrameSize().getTempleLength());
-            existingGlass.setFrameSize(frameSize);
-        }
-
-        return glassRepository.save(existingGlass);
+    private Glass convertToEntity(GlassesDTO glassDTO) {
+        Glass glass = modelMapper.map(glassDTO, Glass.class);
+        return glass;
     }
 
     @Override
@@ -217,38 +186,9 @@ public class GlassServiceImpl implements GlassService {
         return glassRepository.searchGlasses(keyword);
     }
 
-    private GlassDTO convertToGlassDTO(Glass glass) {
-        GlassDTO dto = new GlassDTO();
-
-        dto.setId(glass.getId());
-        dto.setName(glass.getName());
-        dto.setBrand(glass.getBrand());
-        dto.setPrice(glass.getPrice());
-//        dto.setColorName(glass.getColorName());
-        dto.setColorCode(glass.getColorCode());
-        dto.setImageFrontUrl(glass.getImageFrontUrl());
-        dto.setImageSideUrl(glass.getImageSideUrl());
-//        dto.setGender(glass.isGender());
-//        dto.setStock(glass.getStock());
-//        dto.setDescription(glass.getDescription());
-
-        if (glass.getCategory() != null) {
-            dto.setCategoryId(glass.getCategory().getId());
-            dto.setCategoryName(glass.getCategory().getName());
-        }
-
-        if (glass.getSpecifications() != null) {
-            dto.setMaterial(glass.getSpecifications().getMaterial());
-            dto.setShape(glass.getSpecifications().getShape());
-        }
-
-        if (glass.getFrameSize() != null) {
-            dto.setLensWidth(glass.getFrameSize().getLensWidth());
-            dto.setLensHeight(glass.getFrameSize().getLensHeight());
-            dto.setBridgeWidth(glass.getFrameSize().getBridgeWidth());
-            dto.setTempleLength(glass.getFrameSize().getTempleLength());
-        }
-
-        return dto;
+    private GlassesDTO convertToDTO(Glass glass) {
+        GlassesDTO glassDTO= modelMapper.map(glass, GlassesDTO.class);
+        return glassDTO;
     }
+
 }
