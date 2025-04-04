@@ -64,7 +64,17 @@ public class GlassesDTO {
 		this.category = category;
 	}
 
-//	@JsonIgnore
+	public GlassesDTO(Long id, String name, String brand, Double price, String colorCode, String imageFrontUrl, String imageSideUrl) {
+		this.id = id;
+		this.name = name;
+		this.brand = brand;
+		this.price = price;
+		this.colorCode = colorCode;
+		this.imageFrontUrl = imageFrontUrl;
+		this.imageSideUrl = imageSideUrl;
+	}
+
+	//	@JsonIgnore
 	@Valid
 	private Specifications specifications;
 //	@JsonIgnore

@@ -114,10 +114,44 @@ public class GlassServiceImpl implements GlassService {
 
     @Override
     @Transactional
-    public Glass save(@Valid Glass glass) {
-        return glassRepository.save(glass);
-    }
+    public GlassesDTO saveDTO(@Valid GlassesDTO glassDTO) {
+        // Convert DTO to entity
+        Glass glass = modelMapper.map(glassDTO, Glass.class);
 
+        // Set ID to null to ensure we create a new entity
+        glass.setId(null);
+
+        // Save related entities if they're new
+        if (glass.getSpecifications() != null) {
+            if (glass.getSpecifications().getId() != null) {
+                glass.setSpecifications(specificationRepository.findById(glass.getSpecifications().getId()).orElse(null));
+            } else {
+                glass.setSpecifications(specificationRepository.save(glass.getSpecifications()));
+            }
+        }
+
+        if (glass.getFrameSize() != null) {
+            if (glass.getFrameSize().getId() != null) {
+                glass.setFrameSize(frameSizeRepository.findById(glass.getFrameSize().getId()).orElse(null));
+            } else {
+                glass.setFrameSize(frameSizeRepository.save(glass.getFrameSize()));
+            }
+        }
+
+        if (glass.getCategory() != null) {
+            if (glass.getCategory().getId() != null) {
+                glass.setCategory(categoryRepository.findById(glass.getCategory().getId()).orElse(null));
+            } else {
+                glass.setCategory(categoryRepository.save(glass.getCategory()));
+            }
+        }
+
+        // Save the main entity
+        Glass savedGlass = glassRepository.save(glass);
+
+        // Convert back to DTO and return
+        return modelMapper.map(savedGlass, GlassesDTO.class);
+    }
     @Override
     public List<String> getAllBrand() {
         return glassRepository.getAllBrand();
@@ -151,18 +185,79 @@ public class GlassServiceImpl implements GlassService {
 
     @Transactional
     @Override
-    public GlassesDTO update(Long id, GlassesDTO glass) {
-        if (this.findById(id) == null) {
-            return null;
-        }
-        // Update
-        Glass glass1 = this.convertToEntity(new GlassesDTO());
-        System.out.println(glass);
-        Category category = categoryService.findById(glass.getCategory().getId());
-        glass.setCategory(category);
+    public GlassesDTO update(Long id, GlassesDTO glassDTO) {
+        // Check if glass exists
+        Glass existingGlass = glassRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Glass not found with id: " + id));
 
-        glassRepository.save(glass1);
-        return this.convertToDTO(glass1);
+        // Update basic properties
+        existingGlass.setName(glassDTO.getName());
+        existingGlass.setBrand(glassDTO.getBrand());
+        existingGlass.setPrice(glassDTO.getPrice());
+        existingGlass.setColorName(glassDTO.getColorName());
+        existingGlass.setColorCode(glassDTO.getColorCode());
+        existingGlass.setImageFrontUrl(glassDTO.getImageFrontUrl());
+        existingGlass.setImageSideUrl(glassDTO.getImageSideUrl());
+        existingGlass.setGender(glassDTO.isGender());
+        existingGlass.setStock(glassDTO.getStock());
+        existingGlass.setDescription(glassDTO.getDescription());
+
+        // Handle Specifications
+        if (glassDTO.getSpecifications() != null) {
+            if (glassDTO.getSpecifications().getId() != null) {
+                existingGlass.setSpecifications(specificationRepository.findById(glassDTO.getSpecifications().getId())
+                        .orElse(null));
+            } else {
+                if (existingGlass.getSpecifications() != null) {
+                    // Update existing specifications
+                    existingGlass.getSpecifications().setPdRange(glassDTO.getSpecifications().getPdRange());
+                    existingGlass.getSpecifications().setPrescriptionRange(glassDTO.getSpecifications().getPrescriptionRange());
+                    existingGlass.getSpecifications().setAvailableAsProgressiveBifocal(glassDTO.getSpecifications().getAvailableAsProgressiveBifocal());
+                    existingGlass.getSpecifications().setReaders(glassDTO.getSpecifications().getReaders());
+                    existingGlass.getSpecifications().setFrameSizeDescription(glassDTO.getSpecifications().getFrameSizeDescription());
+                    existingGlass.getSpecifications().setRim(glassDTO.getSpecifications().getRim());
+                    existingGlass.getSpecifications().setShape(glassDTO.getSpecifications().getShape());
+                    existingGlass.getSpecifications().setMaterial(glassDTO.getSpecifications().getMaterial());
+                    existingGlass.getSpecifications().setFeature(glassDTO.getSpecifications().getFeature());
+                } else {
+                    // Create new specifications
+                    existingGlass.setSpecifications(specificationRepository.save(glassDTO.getSpecifications()));
+                }
+            }
+        }
+
+        // Handle FrameSize
+        if (glassDTO.getFrameSize() != null) {
+            if (glassDTO.getFrameSize().getId() != null) {
+                existingGlass.setFrameSize(frameSizeRepository.findById(glassDTO.getFrameSize().getId())
+                        .orElse(null));
+            } else {
+                if (existingGlass.getFrameSize() != null) {
+                    // Update existing frameSize
+                    existingGlass.getFrameSize().setFrameWidth(glassDTO.getFrameSize().getFrameWidth());
+                    existingGlass.getFrameSize().setLensWidth(glassDTO.getFrameSize().getLensWidth());
+                    existingGlass.getFrameSize().setBridge(glassDTO.getFrameSize().getBridge());
+                    existingGlass.getFrameSize().setTempleLength(glassDTO.getFrameSize().getTempleLength());
+                    existingGlass.getFrameSize().setLensHeight(glassDTO.getFrameSize().getLensHeight());
+                    existingGlass.getFrameSize().setFrameWeight(glassDTO.getFrameSize().getFrameWeight());
+                } else {
+                    // Create new frameSize
+                    existingGlass.setFrameSize(frameSizeRepository.save(glassDTO.getFrameSize()));
+                }
+            }
+        }
+
+        // Handle Category
+        if (glassDTO.getCategory() != null && glassDTO.getCategory().getId() != null) {
+            existingGlass.setCategory(categoryRepository.findById(glassDTO.getCategory().getId())
+                    .orElse(null));
+        }
+
+        // Save the updated glass
+        Glass updatedGlass = glassRepository.save(existingGlass);
+
+        // Convert back to DTO and return
+        return modelMapper.map(updatedGlass, GlassesDTO.class);
     }
 
     private Glass convertToEntity(GlassesDTO glassDTO) {

@@ -34,7 +34,7 @@ public class Glass {
 	private boolean gender;
 	private int stock;
 	private String description;
-	
+
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "specifications_id")
 //	@JsonIgnore
@@ -216,6 +216,13 @@ public class Glass {
 	}
 
 
+	public int getStock() {
+		return stock;
+	}
+
+	public void setStock(int stock) {
+		this.stock = stock;
+	}
 
 	@Override
 	public String toString() {

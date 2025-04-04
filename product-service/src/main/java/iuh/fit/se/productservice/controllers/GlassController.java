@@ -41,6 +41,7 @@ public class GlassController {
 		return "Hello from Product Service";
 	}
 
+	//Lấy toàn bộ sản phẩm
 	@GetMapping("/glasses")
 	public ResponseEntity<Map<String, Object>> getAll(){
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -48,6 +49,7 @@ public class GlassController {
 		response.put("data", glassService.findAll());
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+	//Lấy sản phẩm theo id
 	@GetMapping("/glasses/{id}")
 	public ResponseEntity<Map<String, Object>> getById(@PathVariable Long id){
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -55,7 +57,7 @@ public class GlassController {
 		response.put("data", glassService.findById(id));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-	
+	//Lấy danh sách sản phẩm eyeglasses
 	@GetMapping("/eyeglasses")
 	public ResponseEntity<Map<String, Object>> getByCategoryEyeGlass() {
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -63,6 +65,7 @@ public class GlassController {
 		response.put("data", glassService.findByCategory(1L));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+	//Lấy danh sách sản phẩm sunglasses
 	@GetMapping("/sunglasses")
 	public ResponseEntity<Map<String, Object>> getByCategorySunGlass() {
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -207,30 +210,25 @@ public class GlassController {
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	//Thêm sản phẩm
-		@PostMapping("/glasses")
-		public ResponseEntity<Map<String, Object>> create(@Valid @RequestBody Glass glassDTO , BindingResult bindingResult) {
-		    Map<String, Object> response = new LinkedHashMap<>();
-		    
-		    if (bindingResult.hasErrors()) {
-				Map<String, Object> errors = new LinkedHashMap<String, Object>();
-				
-				bindingResult.getFieldErrors().stream().forEach(result -> {
-					errors.put(result.getField(), result.getDefaultMessage());
-				});
-				
-				System.out.println(bindingResult);
-				response.put("status", HttpStatus.BAD_REQUEST.value());
-				response.put("errors", errors);
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-			}
-			else {
-//				
-				response.put("status", HttpStatus.OK.value());
-				response.put("data", glassService.save(glassDTO));
-				
-				return ResponseEntity.status(HttpStatus.OK).body(response);
-			}
+	@PostMapping("/glasses")
+	public ResponseEntity<Map<String, Object>> create(@Valid @RequestBody GlassesDTO glassDTO, BindingResult bindingResult) {
+		Map<String, Object> response = new LinkedHashMap<>();
+
+		if (bindingResult.hasErrors()) {
+			Map<String, Object> errors = new LinkedHashMap<>();
+			bindingResult.getFieldErrors().forEach(result -> {
+				errors.put(result.getField(), result.getDefaultMessage());
+			});
+
+			response.put("status", HttpStatus.BAD_REQUEST.value());
+			response.put("errors", errors);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+		} else {
+			response.put("status", HttpStatus.OK.value());
+			response.put("data", glassService.saveDTO(glassDTO));
+			return ResponseEntity.status(HttpStatus.OK).body(response);
 		}
+	}
 
 
 	    // Cập nhật sản phẩm

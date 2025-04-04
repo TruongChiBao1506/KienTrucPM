@@ -18,7 +18,7 @@ public interface GlassService {
 
     public Glass findById(Long id);
 
-    public Glass save(Glass glass);
+    public GlassesDTO saveDTO(@Valid GlassesDTO glassDTO);
 
     public List<String> getAllBrand();
 
