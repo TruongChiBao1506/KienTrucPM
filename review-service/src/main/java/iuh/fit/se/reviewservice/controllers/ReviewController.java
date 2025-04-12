@@ -1,4 +1,4 @@
-package iuh.fit.se.reviewservice.controller;
+package iuh.fit.se.reviewservice.controllers;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
