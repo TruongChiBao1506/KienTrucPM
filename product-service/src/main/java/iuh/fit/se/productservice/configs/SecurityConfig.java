@@ -25,12 +25,26 @@ import java.util.stream.Collectors;
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//                .csrf(csrf->csrf.disable())
+//                .authorizeHttpRequests(authorize -> authorize
+//                        .requestMatchers("/api/products/**","/api/reviews/**").hasAnyRole("USER","ADMIN", "SUPER")
+//                        .anyRequest().authenticated()
+//                )
+//                .sessionManagement(session -> session
+//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                )
+//                .addFilterBefore(new HeaderAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//    }
+
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf->csrf.disable())
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/products/**","/api/reviews/**").hasAnyRole("USER","ADMIN", "SUPER")
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() // Cho phép tất cả request không cần xác thực
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -39,6 +53,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     // Filter để xác thực thông tin từ header được gửi từ API Gateway
     public class HeaderAuthenticationFilter extends OncePerRequestFilter {

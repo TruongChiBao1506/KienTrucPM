@@ -8,6 +8,6 @@ import iuh.fit.se.reviewservice.dto.ProductDto;
 
 @FeignClient(name = "product-service")
 public interface ProductClient {
-    @GetMapping("/api/products/{productId}")
+    @GetMapping("/api/products/glasses/{productId}")
     ProductDto getProductById(@PathVariable Long productId);
 }
