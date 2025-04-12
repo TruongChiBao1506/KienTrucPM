@@ -1,9 +1,11 @@
 package iuh.fit.se.apigateway.filter;
 
+import iuh.fit.se.apigateway.services.TokenRefreshService;
 import iuh.fit.se.apigateway.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -19,21 +21,22 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private TokenRefreshService tokenRefreshService;
+
+
     private static final List<String> OPEN_ENDPOINTS = List.of(
             "/api/auth/login",
             "/api/auth/register",
             "/api/auth/refresh",
             "/api/auth/logout",
+            "/api/auth/get-refresh-token",
             "/swagger-ui",
             "/swagger-ui/**",
             "/v3/api-docs",
             "/v3/api-docs/**",
             "/webjars/**"
     );
-
-    public AuthenticationFilter() {
-        super(Config.class);
-    }
 
     @Override
     public GatewayFilter apply(Config config) {
@@ -60,8 +63,45 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             try {
                 if (jwtUtil.isTokenExpired(token)) {
-                    return onError(exchange, "Token expired", HttpStatus.UNAUTHORIZED);
+                    System.out.println("Token expired, attempting to refresh");
+
+                    // 👉 Lấy refresh token từ cookie
+                    HttpCookie refreshCookie = exchange.getRequest().getCookies().getFirst("refreshToken");
+
+                    if (refreshCookie == null || refreshCookie.getValue().isEmpty()) {
+                        System.out.println("❌ Không tìm thấy refresh token trong cookie");
+                        return onError(exchange, "Refresh token không tồn tại", HttpStatus.UNAUTHORIZED);
+                    }
+
+                    String refreshToken = refreshCookie.getValue();
+
+                    // 👉 Gọi service để làm mới access token từ refresh token
+                    return tokenRefreshService.refreshToken(refreshToken)
+                            .flatMap(response -> {
+                                String newAccessToken = response.getAccessToken();
+                                if (newAccessToken == null || newAccessToken.isEmpty()) {
+                                    System.out.println("❌ Access token rỗng sau khi refresh");
+                                    return onError(exchange, "Không thể làm mới access token", HttpStatus.UNAUTHORIZED);
+                                }
+
+                                String newUsername = jwtUtil.extractUsername(newAccessToken);
+                                List<String> roles = jwtUtil.extractRoles(newAccessToken);
+
+                                ServerHttpRequest finalRequest = exchange.getRequest().mutate()
+                                        // Không cần gắn lại access token nếu không dùng phía dưới
+                                        .header("X-Auth-User", newUsername)
+                                        .header("X-Auth-Roles", String.join(",", roles != null ? roles : List.of()))
+                                        .build();
+
+                                System.out.println("✅ Làm mới token thành công, tiếp tục request");
+                                return chain.filter(exchange.mutate().request(finalRequest).build());
+                            })
+                            .onErrorResume(e -> {
+                                e.printStackTrace(); // debug
+                                return onError(exchange, "Làm mới token thất bại: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+                            });
                 }
+
 
                 String username = jwtUtil.extractUsername(token);
                 List<String> roles = jwtUtil.extractRoles(token); // Lấy roles từ JWT

@@ -76,6 +76,7 @@ public class AuthServiceImpl implements AuthService {
         } else {
             refreshToken = refreshTokenService.createRefreshToken(user.getUsername()); // Tạo mới nếu chưa có
         }
+
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken.getToken()) // Trả về Refresh Token
@@ -175,6 +176,13 @@ public class AuthServiceImpl implements AuthService {
     public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+    @Override
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     @Override
     public void changePassword(AuthUserChangePassword authUserChangePassword) {
         Optional<User> user = userRepository.findByUsername(authUserChangePassword.getUsername());

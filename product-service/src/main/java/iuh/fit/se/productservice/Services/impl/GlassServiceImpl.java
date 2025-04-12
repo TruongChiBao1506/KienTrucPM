@@ -7,6 +7,7 @@ import iuh.fit.se.productservice.Services.CategoryService;
 import iuh.fit.se.productservice.Services.GlassService;
 
 import iuh.fit.se.productservice.dtos.GlassesDTO;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -109,7 +110,7 @@ public class GlassServiceImpl implements GlassService {
     @Override
     public Glass findById(Long id) {
         return glassRepository.findById(id)
-                .orElseThrow();
+                .orElse(null);
     }
 
     @Override
@@ -146,7 +147,7 @@ public class GlassServiceImpl implements GlassService {
     @Override
     public List<GlassStatistic> getTop5Glasses() {
 //        return glassRepository.getTop5Glasses();
-          return null;
+        return null;
     }
 
     @Transactional
@@ -156,13 +157,14 @@ public class GlassServiceImpl implements GlassService {
             return null;
         }
         // Update
-        Glass glass1 = this.convertToEntity(new GlassesDTO());
-        System.out.println(glass);
+        System.out.println("glassDTO: " + glass);
+        Glass glassConvert = this.convertToEntity(glass);
+        System.out.println(glassConvert);
         Category category = categoryService.findById(glass.getCategory().getId());
         glass.setCategory(category);
 
-        glassRepository.save(glass1);
-        return this.convertToDTO(glass1);
+        glassRepository.save(glassConvert);
+        return this.convertToDTO(glassConvert);
     }
 
     private Glass convertToEntity(GlassesDTO glassDTO) {
@@ -184,6 +186,16 @@ public class GlassServiceImpl implements GlassService {
     @Override
     public List<Glass> searchGlasses(String keyword) {
         return glassRepository.searchGlasses(keyword);
+    }
+
+    @Override
+    public void updateStock(Long id, int quantity) {
+        Glass glass = glassRepository.findById(id).get();
+        if (glass == null) {
+            throw new EntityNotFoundException("Glass not found with id: " + id);
+        }
+        glass.setStock(glass.getStock() - quantity);
+        glassRepository.save(glass);
     }
 
     private GlassesDTO convertToDTO(Glass glass) {

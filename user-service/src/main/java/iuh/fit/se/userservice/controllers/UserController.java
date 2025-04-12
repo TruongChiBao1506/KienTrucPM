@@ -394,4 +394,17 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    @GetMapping("/user-profile/{id}")
+    public ResponseEntity<Map<String, Object>> getUserProfileById (@PathVariable Long id){
+        Map<String, Object> response = new LinkedHashMap<>();
+        try {
+            response.put("status", HttpStatus.OK.value());
+            response.put("data", userService.findById(id));
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Lỗi khi lấy thông tin người dùng: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }

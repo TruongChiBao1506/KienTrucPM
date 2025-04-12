@@ -7,6 +7,7 @@ import iuh.fit.se.productservice.Services.SpecificationService;
 import iuh.fit.se.productservice.dtos.FilterRequest;
 import iuh.fit.se.productservice.dtos.GlassDTO;
 import iuh.fit.se.productservice.dtos.GlassesDTO;
+import iuh.fit.se.productservice.dtos.GlassesToOrderItemDTO;
 import iuh.fit.se.productservice.entities.Glass;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +37,10 @@ public class GlassController {
 	@Autowired
 	private CategoryService categoryService;
 
-	@GetMapping("/hello")
-	public String hello() {
-		return "Hello from Product Service";
-	}
+//	@GetMapping("/hello")
+//	public String hello() {
+//		return "Hello from Product Service";
+//	}
 
 	@GetMapping("/glasses")
 	public ResponseEntity<Map<String, Object>> getAll(){
@@ -208,7 +209,7 @@ public class GlassController {
 	}
 	//Thêm sản phẩm
 		@PostMapping("/glasses")
-		public ResponseEntity<Map<String, Object>> create(@Valid @RequestBody Glass glassDTO , BindingResult bindingResult) {
+		public ResponseEntity<Map<String, Object>> create(@Valid @RequestBody GlassesDTO glassDTO , BindingResult bindingResult) {
 		    Map<String, Object> response = new LinkedHashMap<>();
 		    
 		    if (bindingResult.hasErrors()) {
@@ -224,9 +225,22 @@ public class GlassController {
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 			}
 			else {
-//				
+				Glass glass = new Glass();
+				glass.setName(glassDTO.getName());
+				glass.setBrand(glassDTO.getBrand());
+				glass.setPrice(glassDTO.getPrice());
+				glass.setColorCode(glassDTO.getColorCode());
+				glass.setColorName(glassDTO.getColorName());
+				glass.setDescription(glassDTO.getDescription());
+				glass.setStock(glassDTO.getStock());
+				glass.setImageFrontUrl(glassDTO.getImageFrontUrl());
+				glass.setImageSideUrl(glassDTO.getImageSideUrl());
+				glass.setCategory(glassDTO.getCategory());
+				glass.setFrameSize(glassDTO.getFrameSize());
+				glass.setSpecifications(glassDTO.getSpecifications());
+
 				response.put("status", HttpStatus.OK.value());
-				response.put("data", glassService.save(glassDTO));
+				response.put("data", glassService.save(glass));
 				
 				return ResponseEntity.status(HttpStatus.OK).body(response);
 			}
@@ -299,4 +313,25 @@ public class GlassController {
 	        response.put("data", glassService.search(keyword));
 	        return ResponseEntity.ok(response);
 	    }
+		@PostMapping("/glasses/{id}/update-stock")
+		public ResponseEntity<Map<String, Object>> updateStock(
+				@PathVariable Long id,
+				@RequestParam int quantity) {
+			Map<String, Object> response = new LinkedHashMap<>();
+			glassService.updateStock(id, quantity);
+			response.put("status", HttpStatus.OK.value());
+			response.put("message", "Update stock success");
+			return ResponseEntity.status(HttpStatus.OK).body(response);
+		}
+		@GetMapping("/glassesDTO/{id}")
+		public GlassesToOrderItemDTO findById(Long id) {
+			Glass glass = glassService.findById(id);
+			GlassesToOrderItemDTO glassesToOrderItemDTO = new GlassesToOrderItemDTO();
+			glassesToOrderItemDTO.setName(glass.getName());
+			glassesToOrderItemDTO.setBrand(glass.getBrand());
+			glassesToOrderItemDTO.setImage_side_url(glass.getImageSideUrl());
+			glassesToOrderItemDTO.setColor_name(glass.getColorName());
+			glassesToOrderItemDTO.setColor_code(glass.getColorCode());
+			return glassesToOrderItemDTO;
+		}
 }

@@ -1,12 +1,12 @@
-package iuh.fit.se.authservice.dtos;
+package iuh.fit.se.apigateway.dtos;
 
 import lombok.*;
 
 @Data
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class RefreshRequest {
     private String refreshToken;
 }

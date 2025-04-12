@@ -7,9 +7,12 @@ import iuh.fit.se.authservice.entities.Role;
 import iuh.fit.se.authservice.entities.User;
 import iuh.fit.se.authservice.services.AuthService;
 import iuh.fit.se.authservice.services.RefreshTokenService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,10 +20,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.Duration;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -72,11 +73,29 @@ public class AuthController {
         try {
             AuthResponse authResponse = authService.login(request);
 
+            // Tạo refreshToken dưới dạng Cookie
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", authResponse.getRefreshToken())
+                    .httpOnly(true)
+                    .secure(false) // true nếu dùng HTTPS
+                    .path("/")
+                    .maxAge(Duration.ofDays(7))
+                    .sameSite("Strict")
+                    .build();
+
+            // Tạo body response (không trả refreshToken)
             Map<String, Object> response = new LinkedHashMap<>();
             response.put("status", HttpStatus.OK.value());
-            response.put("data", authResponse);
 
-            return ResponseEntity.ok(response);
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("accessToken", authResponse.getAccessToken());
+            data.put("username", authResponse.getUsername());
+            data.put("role", authResponse.getRole());
+            response.put("data", data);
+
+            return ResponseEntity
+                    .ok()
+                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                    .body(response);
 
         } catch (BadCredentialsException e) {
             Map<String, Object> response = new LinkedHashMap<>();
@@ -90,8 +109,20 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshRequest request) {
+        System.out.println("📥 Nhận refreshToken từ gateway: " + request.getRefreshToken());
+        Optional<RefreshToken> refreshTokenOptional = refreshTokenService.findByToken(request.getRefreshToken());
+        if (refreshTokenOptional.isEmpty()) {
+            System.out.println("❌ Refresh token không hợp lệ");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+        RefreshToken refreshToken = refreshTokenOptional.get();
+        if(!refreshTokenService.verifyExpiration(refreshToken)) {
+            System.out.println("❌ Refresh token đã hết hạn");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
         return ResponseEntity.ok(authService.refresh(request.getRefreshToken()));
     }
     @PostMapping("/logout")
@@ -216,5 +247,45 @@ public class AuthController {
             response.put("message", "Lỗi hệ thống, vui lòng thử lại sau!");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+    }
+    @GetMapping("/get-refresh-token")
+    public ResponseEntity<Map<String, Object>>getRefreshToken(@RequestParam String username){
+        try{
+            User user = authService.findByUsername(username);
+            if (user == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("status", HttpStatus.NOT_FOUND.value());
+                response.put("message", "Không tìm thấy người dùng với username: " + username);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            Optional<RefreshToken> refreshTokenOptional = refreshTokenService.findByUser(user);
+            if (refreshTokenOptional.isPresent()) {
+                RefreshToken refreshToken = refreshTokenOptional.get();
+                if (refreshTokenService.verifyExpiration(refreshToken)) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("status", HttpStatus.OK.value());
+                    response.put("refreshToken", refreshToken.getToken());
+                    return ResponseEntity.ok(response);
+                } else {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("status", HttpStatus.UNAUTHORIZED.value());
+                    response.put("message", "Refresh token đã hết hạn");
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+                }
+            } else {
+                Map<String, Object> response = new HashMap<>();
+                response.put("status", HttpStatus.NOT_FOUND.value());
+                response.put("message", "Không tìm thấy refresh token cho người dùng: " + username);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+        }catch (Exception e){
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Lỗi khi lấy refresh token: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+
+
     }
 }

@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import iuh.fit.se.reviewservice.dto.ProductDto;
 
-@FeignClient(name = "PRODUCT-SERVICE")
+@FeignClient(name = "product-service", path = "/api/products")
 public interface ProductClient {
-    @GetMapping("/api/products/{productId}")
+    @GetMapping("/{productId}")
     ProductDto getProductById(@PathVariable Long productId);
 }

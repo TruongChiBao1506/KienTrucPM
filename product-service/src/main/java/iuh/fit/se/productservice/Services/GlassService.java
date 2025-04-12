@@ -37,4 +37,6 @@ public interface GlassService {
     public boolean delete(Long id);
 
     public List<Glass> searchGlasses(String keyword);
+
+    public void updateStock(Long id, int quantity);
 }

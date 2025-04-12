@@ -1,6 +1,7 @@
 package iuh.fit.se.apigateway.utils;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -22,8 +23,13 @@ public class JwtUtil {
 
     // Lấy username từ JWT
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        try {
+            return extractClaim(token, Claims::getSubject);
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Error extracting username: " + e.getMessage());
+        }
     }
+
 
     // Kiểm tra token hết hạn
     public boolean isTokenExpired(String token) {
@@ -64,7 +70,8 @@ public class JwtUtil {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException("Invalid JWT Token: " + e.getMessage());
         }
     }
