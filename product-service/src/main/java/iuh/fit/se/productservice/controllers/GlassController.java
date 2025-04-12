@@ -314,9 +314,10 @@ public class GlassController {
 	        return ResponseEntity.ok(response);
 	    }
 		@PostMapping("/glasses/{id}/update-stock")
-		public ResponseEntity<Map<String, Object>> updateStock(
+		public ResponseEntity<Map<String, Object>> updateStockProduct(
 				@PathVariable Long id,
 				@RequestParam int quantity) {
+			System.out.println("Update stock for glass with ID: " + id + ", quantity: " + quantity);
 			Map<String, Object> response = new LinkedHashMap<>();
 			glassService.updateStock(id, quantity);
 			response.put("status", HttpStatus.OK.value());
