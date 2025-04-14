@@ -29,6 +29,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/products/glasses/*/update-stock**").permitAll()
+                        .requestMatchers("/api/products/glasses-review/**").hasAnyRole("USER", "ADMIN", "SUPER")
                         .requestMatchers("/api/products/**","/api/reviews/**").hasAnyRole("USER","ADMIN", "SUPER")
                 )
                 .sessionManagement(session -> session
@@ -46,12 +48,18 @@ public class SecurityConfig {
                                         HttpServletResponse response,
                                         FilterChain filterChain) throws ServletException, IOException {
 
+            String path = request.getRequestURI();
+            if (path != null && path.matches("^/api/products/glasses/\\d+/update-stock.*")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String username = request.getHeader("X-Auth-User");
             String rolesStr = request.getHeader("X-Auth-Roles");
 
             if (username != null && rolesStr != null) {
                 List<SimpleGrantedAuthority> authorities = Arrays.stream(rolesStr.split(","))
-                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
                         .collect(Collectors.toList());
 
                 UsernamePasswordAuthenticationToken authentication =
