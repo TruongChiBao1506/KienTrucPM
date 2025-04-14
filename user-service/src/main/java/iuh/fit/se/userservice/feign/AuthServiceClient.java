@@ -1,5 +1,6 @@
 package iuh.fit.se.userservice.feign;
 
+import iuh.fit.se.userservice.configs.FeignConfig;
 import iuh.fit.se.userservice.dtos.AuthUser;
 import iuh.fit.se.userservice.dtos.AuthUserChangePassword;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "auth-service", path = "/api/auth")
+@FeignClient(name = "auth-service", path = "/api/auth", configuration = FeignConfig.class)
 public interface AuthServiceClient {
     @GetMapping("/all-by-role/{role}")
     List<Long>getUserIdsByRole(@PathVariable("role") String role);
