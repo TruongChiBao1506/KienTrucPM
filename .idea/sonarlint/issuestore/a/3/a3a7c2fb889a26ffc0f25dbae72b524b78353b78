@@ -1,0 +1,55 @@
+
+v
+java:S2293M"YReplace the type specification in this constructor call with the diamond operator ("<>").(œ«”8¬Ç…Îâ2
+{
+java:S2293Q"YReplace the type specification in this constructor call with the diamond operator ("<>").(üÓïÒıÿÿÿÿ8­Ç…Îâ2
+{
+java:S2293j"YReplace the type specification in this constructor call with the diamond operator ("<>").(üÓïÒıÿÿÿÿ8®Ç…Îâ2
+w
+java:S2293«"YReplace the type specification in this constructor call with the diamond operator ("<>").(œ«”8¯Ç…Îâ2
+w
+java:S2293à"YReplace the type specification in this constructor call with the diamond operator ("<>").(œ«”8°Ç…Îâ2
+|
+java:S2293Õ"YReplace the type specification in this constructor call with the diamond operator ("<>").(üÓïÒıÿÿÿÿ8±Ç…Îâ2
+|
+java:S2293İ"YReplace the type specification in this constructor call with the diamond operator ("<>").(üÓïÒıÿÿÿÿ8±Ç…Îâ2
+q
+java:S1192X"ODefine a constant instead of duplicating this literal "User not found" 3 times.(Åøøÿÿÿÿ8´Ç…Îâ2
+k
+java:S1192X"IDefine a constant instead of duplicating this literal "message" 22 times.(Åøøÿÿÿÿ8µÇ…Îâ2
+i
+java:S1192S"GDefine a constant instead of duplicating this literal "errors" 3 times.(“×¢Éÿÿÿÿÿ8¶Ç…Îâ2
+j
+java:S1192D"HDefine a constant instead of duplicating this literal "status" 26 times.(êŠ“Ëøÿÿÿÿ8¸Ç…Îâ2
+X
+java:S1141¾"5Extract this nested try block into a separate method.(¡»¢üùÿÿÿÿ8»Ç…Îâ2
+m	java:S117V"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¢Íá«8¼Ç…Îâ2
+i
+java:S2259Æ"FA "NullPointerException" could be thrown; "getBody()" can return null.(ˆæ»Úüÿÿÿÿ8œÛ…Îâ2
+d
+java:S2259 "FA "NullPointerException" could be thrown; "getBody()" can return null.(Øü´ä8Ú…Îâ2
+m
+java:S2259£"JA "NullPointerException" could be thrown; "responseBody" is nullable here.(áÕ”úÿÿÿÿ8âÛ…Îâ2
+s
+java:S3655„"PCall "Optional#isPresent()" or "!Optional#isEmpty()" before accessing the value.(´ä¬‘şÿÿÿÿ8ãÛ…Îâ2
+L	java:S106B"+Replace this use of System.out by a logger.(Ê Ùáøÿÿÿÿ8ëÜ…Îâ2
+N
+java:S1602N",Remove useless curly braces around statement(Úåç§ÿÿÿÿÿ8úÜ…Îâ2
+M	java:S106…"+Replace this use of System.out by a logger.(¼œûÿÿÿÿÿ8¶İ…Îâ2
+O
+java:S1602­",Remove useless curly braces around statement(Úåç§ÿÿÿÿÿ8Öİ…Îâ2
+O
+java:S1602â",Remove useless curly braces around statement(Úåç§ÿÿÿÿÿ8¯Ş…Îâ2
+H	java:S106å"+Replace this use of System.out by a logger.(Ï§Õ‡8´Ş…Îâ2
+H	java:S106 "+Replace this use of System.out by a logger.(Øü´ä8àŞ…Îâ2
+|
+java:S2142Æ"^Either re-interrupt this method or rethrow the "InterruptedException" that can be caught here.(”ı¾8ãâ…Îâ2
+H	java:S106Ñ"+Replace this use of System.out by a logger.(Îë¸Ù8ã…Îâ2
+M	java:S106Ò"+Replace this use of System.out by a logger.(Äüêÿÿÿÿÿ8©ä…Îâ2
+M	java:S106Ó"+Replace this use of System.out by a logger.(“¨×£şÿÿÿÿ8ªä…Îâ2
+q
+java:S1128"ORemove this unused import 'iuh.fit.se.userservice.repositories.UserRepository'.(àÎÒ¢ÿÿÿÿÿ8…ê…Îâ2
+~
+java:S1128"aRemove this unused import 'org.springframework.security.core.annotation.AuthenticationPrincipal'.(Øù¢8…ê…Îâ2
+s
+java:S1128"VRemove this unused import 'org.springframework.security.core.userdetails.UserDetails'.(ÊÁ¥8…ê…Îâ2

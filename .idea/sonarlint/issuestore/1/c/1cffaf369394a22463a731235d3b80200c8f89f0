@@ -1,0 +1,19 @@
+
+t
+java:S1488Œ"]Immediately return this expression instead of assigning it to the temporary variable "glass".(´¢ø
+|
+java:S1488¢"`Immediately return this expression instead of assigning it to the temporary variable "glassDTO".(ã„‡µÿÿÿÿÿ
+o	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(Ñ×ÀĞ
+V	java:S125"<This block of commented-out lines of code should be removed.(Â¾ÙØùÿÿÿÿ
+m
+java:S3776A"RRefactor this method to reduce its Cognitive Complexity from 26 to the 15 allowed.(“›ä‘ÿÿÿÿÿ
+B
+java:S1168»"+Return an empty collection instead of null.(¥¹ï
+W	java:S125º"<This block of commented-out lines of code should be removed.(Ï¶šŒøÿÿÿÿ
+n
+java:S3776À"RRefactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.(õÄŒÜüÿÿÿÿ
+?	java:S108“")Either remove or fill this block of code.(©…äº
+c
+java:S1128"HRemove this unused import 'iuh.fit.se.productservice.entities.Category'.(ºáœéúÿÿÿÿ
+K
+java:S1144‹"4Remove this unused private "convertToEntity" method.(¶º–Ç

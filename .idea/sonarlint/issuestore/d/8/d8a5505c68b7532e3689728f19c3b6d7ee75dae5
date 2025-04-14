@@ -1,0 +1,4 @@
+
+V	java:S125"<This block of commented-out lines of code should be removed.(ÉËœ”üÿÿÿÿ
+h
+java:S6204G"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(ª™¨¹
