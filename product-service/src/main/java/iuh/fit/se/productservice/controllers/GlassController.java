@@ -88,69 +88,69 @@ public class GlassController {
 		response.put("data", glassService.findByCategory(2L));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-//	@GetMapping("/eyeglasses/men")
-//	public ResponseEntity<Map<String, Object>> getByCategoryEyeGlassMen(
-//			@RequestParam(required = false) String brand,
-//			@RequestParam(required = false) String shape,
-//			@RequestParam(required = false) String material,
-//			@RequestParam(required = false) String color,
-//			@RequestParam(required = false) String minPrice,
-//			@RequestParam(required = false) String maxPrice) {
-//		FilterRequest filter = new FilterRequest();
-//		filter.setBrands(brand);
-//		filter.setShapes(shape);
-//		filter.setMaterials(material);
-//		filter.setColors(color);
-//		filter.setMinPrice(minPrice);
-//		filter.setMaxPrice(maxPrice);
-//		System.out.println(filter);
-//		Map<String, Object> response = new LinkedHashMap<String, Object>();
-//		response.put("status", HttpStatus.OK.value());
-//		response.put("data", glassService.findByCategoryAndGenderAndFilter(1L, true, filter));
-//		return ResponseEntity.status(HttpStatus.OK).body(response);
-//	}
-//	@GetMapping("/eyeglasses/women")
-//	public ResponseEntity<Map<String, Object>> getByCategoryEyeGlassWomen(
-//			@RequestParam(required = false) String brand,
-//			@RequestParam(required = false) String shape,
-//			@RequestParam(required = false) String material,
-//			@RequestParam(required = false) String color,
-//			@RequestParam(required = false) String minPrice,
-//			@RequestParam(required = false) String maxPrice) {
-//		FilterRequest filter = new FilterRequest();
-//		filter.setBrands(brand);
-//		filter.setShapes(shape);
-//		filter.setMaterials(material);
-//		filter.setColors(color);
-//		filter.setMinPrice(minPrice);
-//		filter.setMaxPrice(maxPrice);
-//		System.out.println(filter);
-//		Map<String, Object> response = new LinkedHashMap<String, Object>();
-//		response.put("status", HttpStatus.OK.value());
-//		response.put("data", glassService.findByCategoryAndGenderAndFilter(1L, false, filter));
-//		return ResponseEntity.status(HttpStatus.OK).body(response);
-//	}
-//	@GetMapping("/sunglasses/men")
-//	public ResponseEntity<Map<String, Object>> getByCategorySunGlassMen(
-//			@RequestParam(required = false) String brand,
-//			@RequestParam(required = false) String shape,
-//			@RequestParam(required = false) String material,
-//			@RequestParam(required = false) String color,
-//			@RequestParam(required = false) String minPrice,
-//			@RequestParam(required = false) String maxPrice) {
-//		FilterRequest filter = new FilterRequest();
-//		filter.setBrands(brand);
-//		filter.setShapes(shape);
-//		filter.setMaterials(material);
-//		filter.setColors(color);
-//		filter.setMinPrice(minPrice);
-//		filter.setMaxPrice(maxPrice);
-//		System.out.println(filter);
-//		Map<String, Object> response = new LinkedHashMap<String, Object>();
-//		response.put("status", HttpStatus.OK.value());
-//		response.put("data", glassService.findByCategoryAndGenderAndFilter(2L, true, filter));
-//		return ResponseEntity.status(HttpStatus.OK).body(response);
-//	}
+	@GetMapping("/eyeglasses/men")
+	public ResponseEntity<Map<String, Object>> getByCategoryEyeGlassMen(
+			@RequestParam(required = false) String brand,
+			@RequestParam(required = false) String shape,
+			@RequestParam(required = false) String material,
+			@RequestParam(required = false) String color,
+			@RequestParam(required = false) String minPrice,
+			@RequestParam(required = false) String maxPrice) {
+		FilterRequest filter = new FilterRequest();
+		filter.setBrands(brand);
+		filter.setShapes(shape);
+		filter.setMaterials(material);
+		filter.setColors(color);
+		filter.setMinPrice(minPrice);
+		filter.setMaxPrice(maxPrice);
+		System.out.println(filter);
+		Map<String, Object> response = new LinkedHashMap<String, Object>();
+		response.put("status", HttpStatus.OK.value());
+		response.put("data", glassService.findByCategoryAndGenderAndFilter(1L, true, filter));
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	@GetMapping("/eyeglasses/women")
+	public ResponseEntity<Map<String, Object>> getByCategoryEyeGlassWomen(
+			@RequestParam(required = false) String brand,
+			@RequestParam(required = false) String shape,
+			@RequestParam(required = false) String material,
+			@RequestParam(required = false) String color,
+			@RequestParam(required = false) String minPrice,
+			@RequestParam(required = false) String maxPrice) {
+		FilterRequest filter = new FilterRequest();
+		filter.setBrands(brand);
+		filter.setShapes(shape);
+		filter.setMaterials(material);
+		filter.setColors(color);
+		filter.setMinPrice(minPrice);
+		filter.setMaxPrice(maxPrice);
+		System.out.println(filter);
+		Map<String, Object> response = new LinkedHashMap<String, Object>();
+		response.put("status", HttpStatus.OK.value());
+		response.put("data", glassService.findByCategoryAndGenderAndFilter(1L, false, filter));
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	@GetMapping("/sunglasses/men")
+	public ResponseEntity<Map<String, Object>> getByCategorySunGlassMen(
+			@RequestParam(required = false) String brand,
+			@RequestParam(required = false) String shape,
+			@RequestParam(required = false) String material,
+			@RequestParam(required = false) String color,
+			@RequestParam(required = false) String minPrice,
+			@RequestParam(required = false) String maxPrice) {
+		FilterRequest filter = new FilterRequest();
+		filter.setBrands(brand);
+		filter.setShapes(shape);
+		filter.setMaterials(material);
+		filter.setColors(color);
+		filter.setMinPrice(minPrice);
+		filter.setMaxPrice(maxPrice);
+		System.out.println(filter);
+		Map<String, Object> response = new LinkedHashMap<String, Object>();
+		response.put("status", HttpStatus.OK.value());
+		response.put("data", glassService.findByCategoryAndGenderAndFilter(2L, true, filter));
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
 	@GetMapping("/sunglasses/women")
 	public ResponseEntity<Map<String, Object>> getByCategorySunGlassWomen(
 			@RequestParam(required = false) String brand,
@@ -169,7 +169,7 @@ public class GlassController {
 		System.out.println(filter);
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
 		response.put("status", HttpStatus.OK.value());
-//		response.put("data", glassService.findByCategoryAndGenderAndFilter(2L, false, filter));
+		response.put("data", glassService.findByCategoryAndGenderAndFilter(2L, false, filter));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	

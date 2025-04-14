@@ -2,9 +2,7 @@ package iuh.fit.se.productservice.Services;
 
 import java.util.List;
 
-import iuh.fit.se.productservice.dtos.GlassStatistic;
-import iuh.fit.se.productservice.dtos.GlassesDTO;
-import iuh.fit.se.productservice.dtos.GlassesUpdatedStockResponse;
+import iuh.fit.se.productservice.dtos.*;
 import iuh.fit.se.productservice.entities.Glass;
 import jakarta.validation.Valid;
 
@@ -15,7 +13,7 @@ public interface GlassService {
 
     public List<Glass> findByCategoryAndGender(Long categoryId, boolean gender);
 
-//    public List<GlassDTO> findByCategoryAndGenderAndFilter(Long categoryId, boolean gender, FilterRequest filter);
+    public List<GlassDTO> findByCategoryAndGenderAndFilter(Long categoryId, boolean gender, FilterRequest filter);
 
     public Glass findById(Long id);
 

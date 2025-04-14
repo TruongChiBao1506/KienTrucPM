@@ -1,26 +1,27 @@
 package iuh.fit.se.productservice.Services.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import iuh.fit.se.productservice.Repositories.SpecificationRepository;
 import iuh.fit.se.productservice.Services.CategoryService;
 import iuh.fit.se.productservice.Services.GlassService;
 
-import iuh.fit.se.productservice.dtos.GlassesDTO;
-import iuh.fit.se.productservice.dtos.GlassesUpdatedStockResponse;
+import iuh.fit.se.productservice.dtos.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import iuh.fit.se.productservice.dtos.GlassStatistic;
 import iuh.fit.se.productservice.entities.Category;
 import iuh.fit.se.productservice.entities.Glass;
 //import iuh.fit.se.productservice.exceptions.EntityNotFoundException;
 import iuh.fit.se.productservice.Repositories.CategoryRepository;
 import iuh.fit.se.productservice.Repositories.FrameSizeRepository;
 import iuh.fit.se.productservice.Repositories.GlassRepository;
+import jakarta.persistence.criteria.Predicate;
 import org.modelmapper.ModelMapper;
 
 @Service
@@ -59,54 +60,61 @@ public class GlassServiceImpl implements GlassService {
         return glassRepository.findByCategoryAndGender(categoryId, gender);
     }
 
-//    @Override
-//    public List<GlassDTO> findByCategoryAndGenderAndFilter(Long categoryId, boolean gender, FilterRequest filter) {
-//        return glassRepository.findAll((root, query, criteriaBuilder) -> {
-//            List<Predicate> predicates = new ArrayList<>();
-//
-//            // Always apply category and gender filters
-//            predicates.add(criteriaBuilder.equal(root.get("category").get("id"), categoryId));
-//            predicates.add(criteriaBuilder.equal(root.get("gender"), gender));
-//
-//            if (filter != null) {
-//                // Price range filter
-//                if (filter.getMinPrice() != null && !filter.getMinPrice().isEmpty()) {
-//                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"),
-//                            Double.parseDouble(filter.getMinPrice())));
-//                }
-//                if (filter.getMaxPrice() != null && !filter.getMaxPrice().isEmpty()) {
-//                    predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"),
-//                            Double.parseDouble(filter.getMaxPrice())));
-//                }
-//
-//                // Brand filter
-//                if (filter.getBrands() != null && !filter.getBrands().isEmpty()) {
-//                    List<String> brands = List.of(filter.getBrands().split(","));
-//                    predicates.add(root.get("brand").in(brands));
-//                }
-//
-//                // Shape filter
-//                if (filter.getShapes() != null && !filter.getShapes().isEmpty()) {
-//                    List<String> shapes = List.of(filter.getShapes().split(","));
-//                    predicates.add(root.get("specifications").get("shape").in(shapes));
-//                }
-//
-//                // Material filter
-//                if (filter.getMaterials() != null && !filter.getMaterials().isEmpty()) {
-//                    List<String> materials = List.of(filter.getMaterials().split(","));
-//                    predicates.add(root.get("specifications").get("material").in(materials));
-//                }
-//
-//                // Color filter
-//                if (filter.getColors() != null && !filter.getColors().isEmpty()) {
-//                    List<String> colors = List.of(filter.getColors().split(","));
-//                    predicates.add(root.get("colorName").in(colors));
-//                }
-//            }
-//
-//            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-//        }).stream().map(this::convertToGlassDTO).toList();
-//    }
+    @Override
+    public List<GlassDTO> findByCategoryAndGenderAndFilter(Long categoryId, boolean gender, FilterRequest filter) {
+        return glassRepository.findAll((root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // Always apply category and gender filters
+            predicates.add(criteriaBuilder.equal(root.get("category").get("id"), categoryId));
+            predicates.add(criteriaBuilder.equal(root.get("gender"), gender));
+
+            if (filter != null) {
+                // Price range filter
+                if (filter.getMinPrice() != null && !filter.getMinPrice().isEmpty()) {
+                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"),
+                            Double.parseDouble(filter.getMinPrice())));
+                }
+                if (filter.getMaxPrice() != null && !filter.getMaxPrice().isEmpty()) {
+                    predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"),
+                            Double.parseDouble(filter.getMaxPrice())));
+                }
+
+                // Brand filter
+                if (filter.getBrands() != null && !filter.getBrands().isEmpty()) {
+                    List<String> brands = List.of(filter.getBrands().split(","));
+                    predicates.add(root.get("brand").in(brands));
+                }
+
+                // Shape filter
+                if (filter.getShapes() != null && !filter.getShapes().isEmpty()) {
+                    List<String> shapes = List.of(filter.getShapes().split(","));
+                    predicates.add(root.get("specifications").get("shape").in(shapes));
+                }
+
+                // Material filter
+                if (filter.getMaterials() != null && !filter.getMaterials().isEmpty()) {
+                    List<String> materials = List.of(filter.getMaterials().split(","));
+                    predicates.add(root.get("specifications").get("material").in(materials));
+                }
+
+                // Color filter
+                if (filter.getColors() != null && !filter.getColors().isEmpty()) {
+                    List<String> colors = List.of(filter.getColors().split(","));
+                    predicates.add(root.get("colorName").in(colors));
+                }
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        }).stream().map(tuple -> new GlassDTO(
+                tuple.getId(),
+                tuple.getImageSideUrl(),
+                tuple.getImageFrontUrl(),
+                tuple.getColorCode(),
+                tuple.getName(),
+                tuple.getBrand(),
+                tuple.getPrice())).collect(Collectors.toList());
+    }
 
     @Override
     public Glass findById(Long id) {
