@@ -4,10 +4,7 @@ import iuh.fit.se.productservice.Services.CategoryService;
 import iuh.fit.se.productservice.Services.FrameSizeService;
 import iuh.fit.se.productservice.Services.GlassService;
 import iuh.fit.se.productservice.Services.SpecificationService;
-import iuh.fit.se.productservice.dtos.FilterRequest;
-import iuh.fit.se.productservice.dtos.GlassDTO;
-import iuh.fit.se.productservice.dtos.GlassesDTO;
-import iuh.fit.se.productservice.dtos.GlassesToOrderItemDTO;
+import iuh.fit.se.productservice.dtos.*;
 import iuh.fit.se.productservice.entities.Glass;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +53,27 @@ public class GlassController {
 		response.put("data", glassService.findById(id));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
-	
+	@GetMapping("/glasses-review/{id}")
+	public ResponseEntity<Map<String, Object>> getGlassesReviewById(@PathVariable Long id){
+		Map<String, Object> response = new LinkedHashMap<String, Object>();
+		Glass glass = glassService.findById(id);
+		if(glass == null) {
+			response.put("status", HttpStatus.NOT_FOUND.value());
+			response.put("message", "Product not found");
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		else {
+			GlassesDTOForReviewResonponse glassesDTOForReviewResonponse = new GlassesDTOForReviewResonponse();
+			glassesDTOForReviewResonponse.setId(glass.getId());
+			glassesDTOForReviewResonponse.setName(glass.getName());
+			glassesDTOForReviewResonponse.setDescription(glass.getDescription());
+			glassesDTOForReviewResonponse.setPrice(glass.getPrice());
+			response.put("status", HttpStatus.OK.value());
+			response.put("data", glassesDTOForReviewResonponse);
+			return ResponseEntity.status(HttpStatus.OK).body(response);
+		}
+
+	}
 	@GetMapping("/eyeglasses")
 	public ResponseEntity<Map<String, Object>> getByCategoryEyeGlass() {
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -319,13 +336,14 @@ public class GlassController {
 				@RequestParam int quantity) {
 			System.out.println("Update stock for glass with ID: " + id + ", quantity: " + quantity);
 			Map<String, Object> response = new LinkedHashMap<>();
-			glassService.updateStock(id, quantity);
+			GlassesUpdatedStockResponse GlassesUpdated = glassService.updateStock(id, quantity);
 			response.put("status", HttpStatus.OK.value());
 			response.put("message", "Update stock success");
+			response.put("data", GlassesUpdated);
 			return ResponseEntity.status(HttpStatus.OK).body(response);
 		}
 		@GetMapping("/glassesDTO/{id}")
-		public GlassesToOrderItemDTO findById(Long id) {
+		public GlassesToOrderItemDTO findById(@PathVariable Long id) {
 			Glass glass = glassService.findById(id);
 			GlassesToOrderItemDTO glassesToOrderItemDTO = new GlassesToOrderItemDTO();
 			glassesToOrderItemDTO.setName(glass.getName());
