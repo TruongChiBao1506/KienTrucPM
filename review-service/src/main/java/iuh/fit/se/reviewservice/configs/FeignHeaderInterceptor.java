@@ -13,7 +13,7 @@ public class FeignHeaderInterceptor implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate requestTemplate) {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-
+        System.out.println("Intercepting request to: " + requestTemplate.url());
         if (attributes != null) {
             HttpServletRequest request = attributes.getRequest();
             String user = request.getHeader("X-Auth-User");

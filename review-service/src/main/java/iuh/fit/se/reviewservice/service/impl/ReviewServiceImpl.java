@@ -1,8 +1,11 @@
 package iuh.fit.se.reviewservice.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import iuh.fit.se.reviewservice.client.ProductClient;
@@ -17,6 +20,7 @@ import iuh.fit.se.reviewservice.repository.ReviewRepository;
 import iuh.fit.se.reviewservice.service.ReviewService;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,15 +28,33 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
 
-    private final ReviewRepository reviewRepository;
-    private final UserClient userClient;
-    private final ProductClient productClient;
+    @Autowired
+    private  ReviewRepository reviewRepository;
+    @Autowired
+    private  UserClient userClient;
+    @Autowired
+    private  ProductClient productClient;
+    @Autowired
+    private ObjectMapper mapper;
 
     @Override
     public ReviewResponse createReview(ReviewRequest reviewRequest) {
         // Lấy thông tin user và product từ các service khác
-        UserDto user = userClient.getUserByUsername(reviewRequest.getUsername());
-        ProductDto product = productClient.getProductById(reviewRequest.getProductId());
+        ResponseEntity<Map<String, Object>> userResponse = userClient.getUserByUsername(reviewRequest.getUsername());
+        Map<String, Object> userData = userResponse.getBody();
+        if (userData == null || userData.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        UserDto user = mapper.convertValue(userData.get("data"), UserDto.class);
+
+        System.out.println("User: " + user);
+        ResponseEntity<Map<String, Object>> productResponse = productClient.getProductById(reviewRequest.getProductId());
+        Map<String, Object> productData = productResponse.getBody();
+        if (productData == null || productData.isEmpty()) {
+            throw new RuntimeException("Product not found");
+        }
+        ProductDto product = mapper.convertValue(productData.get("data"), ProductDto.class);
+        System.out.println("Product: " + product);
 
         // Tạo ReviewId
         ReviewId reviewId = new ReviewId(user.getId(), product.getId());
