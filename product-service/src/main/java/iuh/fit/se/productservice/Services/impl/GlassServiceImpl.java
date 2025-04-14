@@ -7,6 +7,7 @@ import iuh.fit.se.productservice.Services.CategoryService;
 import iuh.fit.se.productservice.Services.GlassService;
 
 import iuh.fit.se.productservice.dtos.GlassesDTO;
+import iuh.fit.se.productservice.dtos.GlassesUpdatedStockResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,13 +190,19 @@ public class GlassServiceImpl implements GlassService {
     }
 
     @Override
-    public void updateStock(Long id, int quantity) {
+    public GlassesUpdatedStockResponse updateStock(Long id, int quantity) {
         Glass glass = glassRepository.findById(id).get();
         if (glass == null) {
             throw new EntityNotFoundException("Glass not found with id: " + id);
         }
         glass.setStock(glass.getStock() - quantity);
         glassRepository.save(glass);
+        GlassesUpdatedStockResponse response = new GlassesUpdatedStockResponse();
+        response.setName(glass.getName());
+        response.setColorName(glass.getColorName());
+        response.setPrice(glass.getPrice());
+
+        return response;
     }
 
     private GlassesDTO convertToDTO(Glass glass) {

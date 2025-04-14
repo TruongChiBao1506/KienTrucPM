@@ -31,11 +31,14 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             "/api/auth/refresh",
             "/api/auth/logout",
             "/api/auth/get-refresh-token",
+            "/api/orders/vnpay-return",
+            "/api/orders/vnpay-return/",
             "/swagger-ui",
             "/swagger-ui/**",
             "/v3/api-docs",
             "/v3/api-docs/**",
             "/webjars/**"
+
     );
 
     @Override
@@ -46,6 +49,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             // Bỏ qua kiểm tra JWT nếu endpoint nằm trong danh sách OPEN_ENDPOINTS
             if (OPEN_ENDPOINTS.stream().anyMatch(path::startsWith)) {
+                System.out.println("Bỏ qua xác thực JWT cho endpoint: " + path);
                 return chain.filter(exchange);
             }
 

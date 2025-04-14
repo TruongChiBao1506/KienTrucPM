@@ -4,6 +4,7 @@ import java.util.List;
 
 import iuh.fit.se.productservice.dtos.GlassStatistic;
 import iuh.fit.se.productservice.dtos.GlassesDTO;
+import iuh.fit.se.productservice.dtos.GlassesUpdatedStockResponse;
 import iuh.fit.se.productservice.entities.Glass;
 import jakarta.validation.Valid;
 
@@ -38,5 +39,5 @@ public interface GlassService {
 
     public List<Glass> searchGlasses(String keyword);
 
-    public void updateStock(Long id, int quantity);
+    public GlassesUpdatedStockResponse updateStock(Long id, int quantity);
 }

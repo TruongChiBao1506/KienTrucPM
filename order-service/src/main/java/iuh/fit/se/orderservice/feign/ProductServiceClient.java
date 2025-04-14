@@ -16,7 +16,7 @@ public interface ProductServiceClient {
     @PostMapping("/glasses/{id}/update-stock")
     ResponseEntity<Map<String, Object>> updateStockProduct(@PathVariable Long id, @RequestParam int quantity);
     @GetMapping("/glassesDTO/{id}")
-    OrderItemFromProductDTO getProductById(@PathVariable("id") Long id);
+    OrderItemFromProductDTO getProductById(@PathVariable Long id);
 
 
 }

@@ -1,10 +1,12 @@
 package iuh.fit.se.orderservice.services.impl;
 
-import iuh.fit.se.orderservice.dtos.OrderItemRequest;
-import iuh.fit.se.orderservice.dtos.OrderRequest;
-import iuh.fit.se.orderservice.dtos.OrderStatistic;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import iuh.fit.se.orderservice.dtos.*;
 import iuh.fit.se.orderservice.entities.Order;
 import iuh.fit.se.orderservice.entities.OrderItem;
+import iuh.fit.se.orderservice.events.publisher.OrderEventPublisher;
+import iuh.fit.se.orderservice.feign.AuthServiceClient;
+import iuh.fit.se.orderservice.feign.NotificationServiceClient;
 import iuh.fit.se.orderservice.feign.ProductServiceClient;
 import iuh.fit.se.orderservice.feign.UserServiceClient;
 import iuh.fit.se.orderservice.repositories.OrderItemRepository;
@@ -22,12 +24,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +44,18 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private ProductServiceClient productServiceClient;
 
+    @Autowired
+    private NotificationServiceClient notificationServiceClient;
+
+    @Autowired
+    private OrderEventPublisher orderEventPublisher;
+
+    @Autowired
+    private AuthServiceClient authServiceClient;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
 
     @Override
     public void createOrder(@RequestBody OrderRequest orderRequest) {
@@ -57,6 +69,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(orderRequest.getStatus());
 
         Order savedOrder = orderRepository.save(order);
+        StringBuilder productTable = new StringBuilder();
         for (OrderItemRequest item : orderRequest.getOrderItems()){
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(savedOrder);
@@ -69,10 +82,54 @@ public class OrderServiceImpl implements OrderService {
             if(responseProducts.getStatusCode().is2xxSuccessful()){
                 orderItemRepository.save(orderItem);
                 System.out.println("Order saved successfully");
+                ProductUpdatedStockResponse response = objectMapper.convertValue(responseProducts.getBody().get("data"), ProductUpdatedStockResponse.class);
+                productTable.append(String.format("""
+		            <tr>
+		                <td style="padding: 10px; border-top: 1px solid #ddd;">
+		                    <div style="display: flex; align-items: center;">
+		                        <div>
+		                            <div style="font-weight: bold;">%s</div>
+		                        </div>
+		                    </div>
+		                </td>
+		                <td style="padding: 10px; border-top: 1px solid #ddd; text-align: right;">%s</td>
+		                <td style="padding: 10px; border-top: 1px solid #ddd; text-align: right;">%d</td>
+		                <td style="padding: 10px; border-top: 1px solid #ddd; text-align: right;">%s</td>
+		            </tr>
+		        """,
+                        response.getName(),
+                        item.getColorName(),
+                        item.getQuantity(),
+                        formatCurrency(item.getPrice())
+                ));
             } else {
                 throw new RuntimeException("Failed to update stock for product ID: " + item.getProductId());
             }
         }
+        Notification notification = new Notification();
+        notification.setOrderId(savedOrder.getId());
+        notification.setMessage("New Order: #" + order.getOrderNumber());
+        notification.setCreatedAt(LocalDateTime.now());
+        notification.setRead(false);
+        orderEventPublisher.sendNotification(notification);
+//        ResponseEntity<Map<String, Object>> responseNotification = notificationServiceClient.saveNotification(notification);
+//        if (responseNotification.getStatusCode().is2xxSuccessful()){
+//            System.out.println("Notification sent successfully");
+//        } else {
+//            throw new RuntimeException("Failed to send notification");
+//        }
+        ResponseEntity<Map<String, Object>> responseAuth = authServiceClient.getAuthUserEmailById(savedOrder.getUserId());
+        if (responseAuth.getStatusCode().is2xxSuccessful()){
+            String email = (String) responseAuth.getBody().get("data");
+            orderEventPublisher.sendEmail(savedOrder, email, productTable);
+        }
+        else {
+            throw new RuntimeException("Failed to send email");
+        }
+    }
+    public String formatCurrency(double amount) {
+        NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
+        return currencyFormat.format(amount) + "đ";
     }
     private String createOrderNumber() {
         LocalDateTime now = LocalDateTime.now();
@@ -161,13 +218,23 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderStatistic> getPurchasedOrder() {
         List<Object[]> list = orderRepository.getPurchasedOrder();
-        return list.stream().map(item -> new OrderStatistic((Integer) item[0], (Integer) item[1])).collect(Collectors.toList());
+        return list.stream()
+                .map(item -> new OrderStatistic(
+                        (Integer) item[0], // MONTH(order_date) là Integer
+                        ((Long) item[1]).intValue() // COUNT(*) là Long, chuyển thành Integer
+                ))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<OrderStatistic> getSalesOrder() {
         List<Object[]> list = orderRepository.getSalesOrder();
-        return list.stream().map(item -> new OrderStatistic((Integer) item[0], (Integer) item[1])).collect(Collectors.toList());
+        return list.stream()
+                .map(item -> new OrderStatistic(
+                        (Integer) item[0], // MONTH(order_date) là Integer
+                        ((Long) item[1]).intValue() // COUNT(*) là Long, chuyển thành Integer
+                ))
+                .collect(Collectors.toList());
     }
 
     @Override

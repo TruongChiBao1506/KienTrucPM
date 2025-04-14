@@ -230,6 +230,31 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    @GetMapping("/user-email/{id}")
+    public  ResponseEntity<Map<String, Object>> getAuthUserEmailById(@PathVariable("id") Long id){
+        try{
+            User user = authService.findById(id);
+            if (user == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("status", HttpStatus.NOT_FOUND.value());
+                response.put("message", "Không tìm thấy người dùng với ID: " + id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            else {
+                System.out.println(user.toString());
+                Map<String, Object> response = new HashMap<>();
+                response.put("status", HttpStatus.OK.value());
+                response.put("data", user.getEmail());
+                return ResponseEntity.ok(response);
+            }
+        }
+        catch (Exception e){
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Lỗi khi lấy thông tin người dùng: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
     @PostMapping("/change-password")
     public ResponseEntity<Map<String, Object>> changePassword(@RequestBody AuthUserChangePassword authUserChangePassword){
         Map<String, Object> response = new LinkedHashMap<>();
