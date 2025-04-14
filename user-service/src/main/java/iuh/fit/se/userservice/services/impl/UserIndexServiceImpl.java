@@ -14,7 +14,6 @@ import iuh.fit.se.userservice.repositories.UserElasticsearchRepository;
 import iuh.fit.se.userservice.repositories.UserRepository;
 import iuh.fit.se.userservice.services.UserIndexService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +25,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-
 public class UserIndexServiceImpl implements UserIndexService {
     @Autowired
     private UserRepository userRepository;

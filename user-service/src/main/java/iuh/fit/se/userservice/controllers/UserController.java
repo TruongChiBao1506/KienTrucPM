@@ -56,10 +56,10 @@ public class UserController {
         this.authServiceClient = authServiceClient;
     }
 
-    @GetMapping("/hello")
-    public String hello() {
-        return "Hello from User Service";
-    }
+//    @GetMapping("/hello")
+//    public String hello() {
+//        return "Hello from User Service";
+//    }
 
     @GetMapping("/{username}")
     public ResponseEntity<Map<String, Object>> getUserInfo(@PathVariable String username) {
