@@ -24,12 +24,12 @@ java:S1192D"HDefine a constant instead of duplicating this literal "status" 26 
 X
 java:S1141¾"5Extract this nested try block into a separate method.(¡»¢üùÿÿÿÿ8»Ç…Îâ2
 m	java:S117V"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¢Íá«8¼Ç…Îâ2
-i
-java:S2259Æ"FA "NullPointerException" could be thrown; "getBody()" can return null.(ˆæ»Úüÿÿÿÿ8œÛ…Îâ2
 d
 java:S2259 "FA "NullPointerException" could be thrown; "getBody()" can return null.(Øü´ä8Ú…Îâ2
 m
 java:S2259£"JA "NullPointerException" could be thrown; "responseBody" is nullable here.(áÕ”úÿÿÿÿ8âÛ…Îâ2
+i
+java:S2259Æ"FA "NullPointerException" could be thrown; "getBody()" can return null.(ˆæ»Úüÿÿÿÿ8œÛ…Îâ2
 s
 java:S3655„"PCall "Optional#isPresent()" or "!Optional#isEmpty()" before accessing the value.(´ä¬‘şÿÿÿÿ8ãÛ…Îâ2
 L	java:S106B"+Replace this use of System.out by a logger.(Ê Ùáøÿÿÿÿ8ëÜ…Îâ2

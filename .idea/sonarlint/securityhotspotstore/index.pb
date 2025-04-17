@@ -103,3 +103,9 @@ Oreview-service/src/main/java/iuh/fit/se/reviewservice/client/ProductClient.java
 Yreview-service/src/main/java/iuh/fit/se/reviewservice/service/impl/ReviewServiceImpl.java,d\1\d14e57f65f23d1a524dd4000e249f26bd48c3947
 F
 review-service/pom.xml,a\1\a1e06064747a786a170fc6f0ee3e494b154e3d65
+€
+Peureka-server/src/main/java/iuh/fit/se/eurekaserver/EurekaServerApplication.java,2\5\2586cfdb03bf1bb0c269387ba0500e3ab207d9f2
+…
+Ueureka-server/src/test/java/iuh/fit/se/eurekaserver/EurekaServerApplicationTests.java,3\7\37cdbbfbf16dc9675656330b8f2958eaea48d2b6
+ƒ
+Sreview-service/src/main/java/iuh/fit/se/reviewservice/client/CustomFeignClient.java,7\c\7c519ab505a88a71af1ace9491fd59e0b943d066

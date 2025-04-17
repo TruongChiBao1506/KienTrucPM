@@ -6,8 +6,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import iuh.fit.se.reviewservice.dto.UserDto;
 
-@FeignClient(name = "user-service", path = "/api/users")
+import java.util.Map;
+
+@FeignClient(name = "user-service", path = "/api/users", configuration = CustomFeignClient.class)
 public interface UserClient {
     @GetMapping("/{username}")
-    UserDto getUserByUsername(@PathVariable String username);
-}
+    Map<String, Object> getUserByUsername(@PathVariable("username") String username);}
