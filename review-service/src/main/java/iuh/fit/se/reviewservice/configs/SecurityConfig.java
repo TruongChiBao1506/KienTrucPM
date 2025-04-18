@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/reviews/**").hasAnyRole("USER","ADMIN", "SUPER")
+                        .requestMatchers("/api/es/test/**").hasAnyRole("USER","ADMIN", "SUPER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

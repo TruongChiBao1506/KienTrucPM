@@ -9,5 +9,3 @@ I
 java:S16020",Remove useless curly braces around statement(’ÛªÐ8ñ’†Îâ2
 G	java:S106c"+Replace this use of System.out by a logger.(å‚à²8ƒ“†Îâ2
 H	java:S106¼"+Replace this use of System.out by a logger.(ê×¼©8Ç•†Îâ2
-f
-java:S1128"IRemove this unused import 'iuh.fit.se.authservice.entities.RefreshToken'.(à…”Ù8Ò•†Îâ2

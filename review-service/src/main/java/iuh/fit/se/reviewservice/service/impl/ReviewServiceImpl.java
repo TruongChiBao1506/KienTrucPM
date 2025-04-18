@@ -14,11 +14,12 @@ import iuh.fit.se.reviewservice.dto.UserDto;
 import iuh.fit.se.reviewservice.events.ReviewCreatedEvent;
 import iuh.fit.se.reviewservice.kafka.KafkaConsumerService;
 import iuh.fit.se.reviewservice.kafka.KafkaProducerService;
+import iuh.fit.se.reviewservice.mapper.ReviewMapper;
 import iuh.fit.se.reviewservice.model.Review;
 import iuh.fit.se.reviewservice.model.ReviewId;
 import iuh.fit.se.reviewservice.model.elasticsearch.ReviewDocument;
 import iuh.fit.se.reviewservice.repository.ReviewRepository;
-import iuh.fit.se.reviewservice.service.ElasticsearchService;
+import iuh.fit.se.reviewservice.repository.elasticsearch.ReviewElasticsearchRepository;
 import iuh.fit.se.reviewservice.service.ReviewService;
 
 import java.time.LocalDateTime;
@@ -33,11 +34,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final ReviewElasticsearchRepository elasticsearchRepository;
+    private final ReviewMapper reviewMapper;
     private final UserClient userClient;
     private final ProductClient productClient;
     private final KafkaProducerService kafkaProducerService;
     private final KafkaConsumerService kafkaConsumerService;
-    private final ElasticsearchService elasticsearchService;
 
     @Override
     public ReviewResponse createReview(ReviewRequest reviewRequest) {
@@ -103,11 +105,11 @@ public class ReviewServiceImpl implements ReviewService {
 
             // Index review in Elasticsearch
             try {
-                log.info("Indexing review in Elasticsearch");
-                elasticsearchService.indexReview(review);
-                log.info("Review indexed successfully in Elasticsearch");
+                ReviewDocument document = reviewMapper.toDocument(review);
+                elasticsearchRepository.save(document);
+                log.info("Đã lưu review vào Elasticsearch thành công");
             } catch (Exception e) {
-                log.error("Failed to index review in Elasticsearch: {}", e.getMessage(), e);
+                log.error("Lỗi khi lưu review vào Elasticsearch: {}", e.getMessage(), e);
                 // Continue execution even if Elasticsearch indexing fails
             }
 
@@ -210,87 +212,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public Page<ReviewResponse> getReviewsByProductId(Long productId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-
-        try {
-            // Try to get reviews from Elasticsearch first
-            log.info("Searching for reviews in Elasticsearch by productId: {}", productId);
-            Page<ReviewDocument> esReviews = elasticsearchService.findByProductId(productId, pageable);
-
-            if (esReviews != null && esReviews.hasContent()) {
-                log.info("Found {} reviews in Elasticsearch", esReviews.getTotalElements());
-                return esReviews.map(this::mapToReviewResponse);
-            } else {
-                log.info("No reviews found in Elasticsearch, falling back to database");
-            }
-        } catch (Exception e) {
-            log.error("Error searching in Elasticsearch: {}", e.getMessage(), e);
-            log.info("Falling back to database search");
-        }
-
-        // Fall back to database if Elasticsearch search fails or returns no results
         Page<Review> reviews = reviewRepository.findByProductId(productId, pageable);
+
         return reviews.map(this::mapToReviewResponse);
-    }
-
-    /**
-     * Maps an Elasticsearch ReviewDocument to a ReviewResponse
-     */
-    private ReviewResponse mapToReviewResponse(ReviewDocument document) {
-        ReviewResponse response = new ReviewResponse();
-        response.setUserId(document.getUserId());
-        response.setProductId(document.getProductId());
-        response.setUsername(document.getUsername());
-        response.setProductName(document.getProductName());
-        response.setContent(document.getContent());
-        response.setRating(document.getRating());
-        response.setCreatedAt(document.getCreatedAt());
-        return response;
-    }
-
-    @Override
-    public Page<ReviewResponse> searchReviewsByContent(String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-
-        try {
-            log.info("Searching for reviews in Elasticsearch by content: {}", keyword);
-            Page<ReviewDocument> esReviews = elasticsearchService.searchByContent(keyword, pageable);
-
-            if (esReviews != null && esReviews.hasContent()) {
-                log.info("Found {} reviews in Elasticsearch", esReviews.getTotalElements());
-                return esReviews.map(this::mapToReviewResponse);
-            } else {
-                log.info("No reviews found in Elasticsearch for content: {}", keyword);
-                // Return empty page if no results found
-                return Page.empty(pageable);
-            }
-        } catch (Exception e) {
-            log.error("Error searching in Elasticsearch by content: {}", e.getMessage(), e);
-            // Return empty page on error
-            return Page.empty(pageable);
-        }
-    }
-
-    @Override
-    public Page<ReviewResponse> searchReviewsByProductName(String productName, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-
-        try {
-            log.info("Searching for reviews in Elasticsearch by product name: {}", productName);
-            Page<ReviewDocument> esReviews = elasticsearchService.searchByProductName(productName, pageable);
-
-            if (esReviews != null && esReviews.hasContent()) {
-                log.info("Found {} reviews in Elasticsearch", esReviews.getTotalElements());
-                return esReviews.map(this::mapToReviewResponse);
-            } else {
-                log.info("No reviews found in Elasticsearch for product name: {}", productName);
-                // Return empty page if no results found
-                return Page.empty(pageable);
-            }
-        } catch (Exception e) {
-            log.error("Error searching in Elasticsearch by product name: {}", e.getMessage(), e);
-            // Return empty page on error
-            return Page.empty(pageable);
-        }
     }
 
     private ReviewResponse mapToReviewResponse(Review review) {
@@ -303,5 +227,75 @@ public class ReviewServiceImpl implements ReviewService {
         response.setRating(review.getRating());
         response.setCreatedAt(review.getCreatedAt());
         return response;
+    }
+
+    @Override
+    public Page<ReviewResponse> searchReviews(String keyword, int page, int size) {
+        log.info("Tìm kiếm review với từ khóa: {}", keyword);
+        Pageable pageable = PageRequest.of(page, size);
+
+        try {
+            Page<ReviewDocument> searchResults = elasticsearchRepository.searchByKeyword(keyword, pageable);
+            return searchResults.map(reviewMapper::toDto);
+        } catch (Exception e) {
+            log.error("Lỗi khi tìm kiếm review trong Elasticsearch: {}", e.getMessage(), e);
+            // Fallback to database search if Elasticsearch fails
+            // Since there's no direct method in JPA repository for full-text search,
+            // we'll just return all reviews and log a warning
+            log.warn("Fallback to database without full-text search capability");
+            Page<Review> reviews = reviewRepository.findAll(pageable);
+            return reviews.map(this::mapToReviewResponse);
+        }
+    }
+
+    @Override
+    public Page<ReviewResponse> getReviewsByUserId(Long userId, int page, int size) {
+        log.info("Lấy review của user ID: {}", userId);
+        Pageable pageable = PageRequest.of(page, size);
+
+        try {
+            Page<ReviewDocument> searchResults = elasticsearchRepository.findByUserId(userId, pageable);
+            return searchResults.map(reviewMapper::toDto);
+        } catch (Exception e) {
+            log.error("Lỗi khi tìm kiếm review theo user ID trong Elasticsearch: {}", e.getMessage(), e);
+            // Fallback to database
+            // Since there's no direct method in JPA repository, we need to implement a custom query
+            // For now, return empty page
+            return Page.empty(pageable);
+        }
+    }
+
+    @Override
+    public Page<ReviewResponse> getReviewsByRating(int rating, int page, int size) {
+        log.info("Lấy review có rating: {}", rating);
+        Pageable pageable = PageRequest.of(page, size);
+
+        try {
+            Page<ReviewDocument> searchResults = elasticsearchRepository.findByRating(rating, pageable);
+            return searchResults.map(reviewMapper::toDto);
+        } catch (Exception e) {
+            log.error("Lỗi khi tìm kiếm review theo rating trong Elasticsearch: {}", e.getMessage(), e);
+            // Fallback to database
+            // Since there's no direct method in JPA repository, we need to implement a custom query
+            // For now, return empty page
+            return Page.empty(pageable);
+        }
+    }
+
+    @Override
+    public Page<ReviewResponse> getReviewsByMinimumRating(int rating, int page, int size) {
+        log.info("Lấy review có rating >= {}", rating);
+        Pageable pageable = PageRequest.of(page, size);
+
+        try {
+            Page<ReviewDocument> searchResults = elasticsearchRepository.findByRatingGreaterThanEqual(rating, pageable);
+            return searchResults.map(reviewMapper::toDto);
+        } catch (Exception e) {
+            log.error("Lỗi khi tìm kiếm review theo minimum rating trong Elasticsearch: {}", e.getMessage(), e);
+            // Fallback to database
+            // Since there's no direct method in JPA repository, we need to implement a custom query
+            // For now, return empty page
+            return Page.empty(pageable);
+        }
     }
 }

@@ -109,3 +109,5 @@ Peureka-server/src/main/java/iuh/fit/se/eurekaserver/EurekaServerApplication.jav
 Ueureka-server/src/test/java/iuh/fit/se/eurekaserver/EurekaServerApplicationTests.java,3\7\37cdbbfbf16dc9675656330b8f2958eaea48d2b6
 ƒ
 Sreview-service/src/main/java/iuh/fit/se/reviewservice/client/CustomFeignClient.java,7\c\7c519ab505a88a71af1ace9491fd59e0b943d066
+e
+5api-gateway/src/main/resources/application.properties,0\b\0b6d99d0109c62201994669fb4a3c9d49c861cbd

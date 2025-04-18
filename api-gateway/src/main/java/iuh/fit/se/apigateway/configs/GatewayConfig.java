@@ -32,6 +32,9 @@ public class GatewayConfig {
                 .route("review-service", r -> r.path("/api/reviews/**")
                         .filters(f -> f.filter(authenticationFilter.apply(new AuthenticationFilter.Config()))) // Áp dụng filter
                         .uri("lb://REVIEW-SERVICE"))
+                .route("review-service-es", r -> r.path("/api/es/test/**")
+                        .filters(f -> f.filter(authenticationFilter.apply(new AuthenticationFilter.Config()))) // Áp dụng filter
+                        .uri("lb://REVIEW-SERVICE"))
                 .route("notification-service", r -> r.path("/api/notifications/**")
                         .filters(f -> f.filter(authenticationFilter.apply(new AuthenticationFilter.Config()))) // Áp dụng filter
                         .uri("lb://NOTIFICATION-SERVICE"))

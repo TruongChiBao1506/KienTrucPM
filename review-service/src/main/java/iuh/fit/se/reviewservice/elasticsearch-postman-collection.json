@@ -1,0 +1,625 @@
+{
+  "info": {
+    "_postman_id": "a62e64b6-a5f4-4c72-acd1-23bb8f9a3b5c",
+    "name": "Review Service - Elasticsearch Test",
+    "description": "Bộ sưu tập API để test chức năng Elasticsearch trong Review Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "12345678"
+  },
+  "item": [
+    {
+      "name": "1. Main Review APIs",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"testuser\",\n    \"productId\": 1,\n    \"content\": \"Sản phẩm rất tốt, đáng tiền!\",\n    \"rating\": 5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/reviews/create",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "create"
+              ]
+            },
+            "description": "Tạo review mới (lưu vào cả DB và Elasticsearch)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Reviews by Product ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/1?page=0&size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Lấy reviews theo ID sản phẩm (sử dụng DB, không phải Elasticsearch)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Các API thông thường của Review Service"
+    },
+    {
+      "name": "2. Elasticsearch APIs",
+      "item": [
+        {
+          "name": "Search Reviews by Keyword",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/search?keyword=tốt&page=0&size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "tốt"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Tìm kiếm review theo từ khóa (sử dụng Elasticsearch)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Reviews by User ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/user/1?page=0&size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "user",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Lấy review theo ID người dùng (sử dụng Elasticsearch)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Reviews by Exact Rating",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/rating/5?page=0&size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "rating",
+                "5"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Lấy review theo rating chính xác (sử dụng Elasticsearch)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Reviews by Minimum Rating",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reviews/rating/min/3?page=0&size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "rating",
+                "min",
+                "3"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Lấy review theo rating tối thiểu (sử dụng Elasticsearch)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Các API sử dụng Elasticsearch cho tìm kiếm nâng cao"
+    },
+    {
+      "name": "3. Direct Elasticsearch Test APIs",
+      "item": [
+        {
+          "name": "Test - Elasticsearch Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/es/test/info",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "info"
+              ]
+            },
+            "description": "Kiểm tra thông tin cơ bản về Elasticsearch repository"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Get All Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/es/test/all?page=0&size=10&sortBy=createdAt&sortDir=desc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "all"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt"
+                },
+                {
+                  "key": "sortDir",
+                  "value": "desc"
+                }
+              ]
+            },
+            "description": "Lấy tất cả review với phân trang và sắp xếp"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Get Review by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/es/test/1_1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "1_1"
+              ]
+            },
+            "description": "Lấy review theo ID (format: userId_productId)"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": 1,\n    \"productId\": 2,\n    \"username\": \"testuser\",\n    \"productName\": \"Test Product\",\n    \"content\": \"Đây là một review test cho Elasticsearch\",\n    \"rating\": 5,\n    \"createdAt\": \"2023-11-15T10:30:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/es/test/create",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "create"
+              ]
+            },
+            "description": "Tạo review mới trực tiếp trong Elasticsearch"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Update Review",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": 1,\n    \"productId\": 2,\n    \"username\": \"testuser\",\n    \"productName\": \"Test Product\",\n    \"content\": \"Đây là nội dung đã được cập nhật\",\n    \"rating\": 4,\n    \"createdAt\": \"2023-11-15T10:30:00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/es/test/1_2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "1_2"
+              ]
+            },
+            "description": "Cập nhật review trong Elasticsearch theo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/es/test/1_2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "1_2"
+              ]
+            },
+            "description": "Xóa review trong Elasticsearch theo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Reindex All",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/es/test/reindex",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "reindex"
+              ]
+            },
+            "description": "Đánh lại index cho tất cả review (thao tác admin)"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Find by Product ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/es/test/product/1?page=0&size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "product",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Test trực tiếp method findByProductId từ repository"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Find by User ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/es/test/user/1?page=0&size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "user",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Test trực tiếp method findByUserId từ repository"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Find by Content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/es/test/content?keyword=tốt&page=0&size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "content"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "tốt"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Test trực tiếp method findByContentContaining từ repository"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Search by Keyword",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/es/test/search?keyword=tốt&page=0&size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "tốt"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Test trực tiếp method searchByKeyword từ repository"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Find by Rating",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/es/test/rating/5?page=0&size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "rating",
+                "5"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Test trực tiếp method findByRating từ repository"
+          },
+          "response": []
+        },
+        {
+          "name": "Test - Find by Minimum Rating",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/es/test/rating/min/4?page=0&size=5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "es",
+                "test",
+                "rating",
+                "min",
+                "4"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Test trực tiếp method findByRatingGreaterThanEqual từ repository"
+          },
+          "response": []
+        }
+      ],
+      "description": "Các API để test trực tiếp các method từ Elasticsearch Repository"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8085",
+      "type": "string"
+    }
+  ]
+}
