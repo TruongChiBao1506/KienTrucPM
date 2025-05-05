@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import iuh.fit.se.reviewservice.client.ProductClient;
 import iuh.fit.se.reviewservice.client.UserClient;
@@ -47,7 +48,6 @@ public class ReviewServiceImpl implements ReviewService {
         }
         UserDto user = mapper.convertValue(userData.get("data"), UserDto.class);
 
-        System.out.println("User: " + user);
         ResponseEntity<Map<String, Object>> productResponse = productClient.getProductById(reviewRequest.getProductId());
         Map<String, Object> productData = productResponse.getBody();
         if (productData == null || productData.isEmpty()) {

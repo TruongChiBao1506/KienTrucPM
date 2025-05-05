@@ -26,4 +26,6 @@ public interface AuthServiceClient {
     ResponseEntity<Map<String, Object>> getAuthUser(@PathVariable("id") Long id);
     @PostMapping("/change-password")
     ResponseEntity<Map<String, Object>> changePassword(@RequestBody AuthUserChangePassword authUserChangePassword);
+    @GetMapping("/user-email/{id}")
+    ResponseEntity<Map<String, Object>> getAuthUserEmailById(@PathVariable("id") Long id);
 }

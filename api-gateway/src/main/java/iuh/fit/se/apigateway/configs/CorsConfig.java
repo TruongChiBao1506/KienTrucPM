@@ -14,7 +14,7 @@ public class CorsConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         //Chỉ định các nguồn hợp lệ
-        corsConfig.setAllowedOrigins(Arrays.asList("http://localhost:8080"));
+        corsConfig.addAllowedOrigin("http://localhost:8889");
         corsConfig.setAllowCredentials(true); // Cho phép gửi credentials (cookies, authorization headers)
 
         //Cho phép tất cả phương thức HTTP

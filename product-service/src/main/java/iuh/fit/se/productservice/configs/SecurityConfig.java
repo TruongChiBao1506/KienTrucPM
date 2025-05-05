@@ -29,9 +29,24 @@ public class SecurityConfig {
         http
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/products/glasses/*/update-stock**").permitAll()
-                        .requestMatchers("/api/products/glasses-review/**").hasAnyRole("USER", "ADMIN", "SUPER")
-                        .requestMatchers("/api/products/**","/api/reviews/**").hasAnyRole("USER","ADMIN", "SUPER")
+                        .requestMatchers("/api/products/glasses/*/update-stock**",
+                                "/api/products/glasses",
+                                "/api/products/glasses/**",
+                                "/api/products/eyeglasses/men**",
+                                "/api/products/eyeglasses/men",
+                                "/api/products/eyeglasses/women**",
+                                "/api/products/eyeglasses/women",
+                                "/api/products/sunglasses/men**",
+                                "/api/products/sunglasses/men",
+                                "/api/products/sunglasses/women**",
+                                "/api/products/sunglasses/women",
+                                "/api/products/brands",
+                                "/api/products/shapes",
+                                "/api/products/materials",
+                                "/api/products/colors",
+                                "/api/products/search**").permitAll()
+                        .requestMatchers("/api/products/**").hasAnyRole("USER", "ADMIN", "SUPER")
+                        .requestMatchers("/api/reviews/**").hasAnyRole("USER","ADMIN", "SUPER")
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

@@ -5,6 +5,7 @@ import iuh.fit.se.notificationservice.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
@@ -23,6 +24,7 @@ public class notificationController {
     }
 
     // Lấy danh sách thông báo chưa đọc
+
     @GetMapping("/unread")
     public ResponseEntity<Map<String, Object>> getUnreadNotifications() {
         System.out.println("getUnreadNotifications");

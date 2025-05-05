@@ -2,10 +2,7 @@ package iuh.fit.se.userservice.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
-import iuh.fit.se.userservice.dtos.AuthUser;
-import iuh.fit.se.userservice.dtos.AuthUserChangePassword;
-import iuh.fit.se.userservice.dtos.UserDTO;
-import iuh.fit.se.userservice.dtos.UserProfileDTO;
+import iuh.fit.se.userservice.dtos.*;
 import iuh.fit.se.userservice.entities.User;
 import iuh.fit.se.userservice.events.dtos.UserEmailUpdateEvent;
 import iuh.fit.se.userservice.events.listeners.UserEventListener;
@@ -63,10 +60,27 @@ public class UserController {
 
     @GetMapping("/{username}")
     public ResponseEntity<Map<String, Object>> getUserInfo(@PathVariable String username) {
-        System.out.println("username: " + username);
         Map<String, Object> response = new LinkedHashMap<>();
+        UserProfileDTO profile = new UserProfileDTO();
+        User user = userService.findByUsername(username).orElse(null);
+        profile.setId(user.getId());
+        profile.setUserId(user.getId());
+        profile.setUsername(user.getUsername());
+        profile.setFullname(user.getFullname());
+        profile.setPhone(user.getPhone());
+        profile.setGender(user.isGender());
+        profile.setDob(user.getDob());
+        profile.setAddress(user.getAddress());
+        ResponseEntity<Map<String, Object>> responseEmail = authServiceClient.getAuthUserEmailById(user.getUserId());
+        if (responseEmail.getStatusCode() != HttpStatus.OK) {
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Lỗi khi lấy thông tin người dùng");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+        String email = responseEmail.getBody().get("data").toString();
+        profile.setEmail(email);
         response.put("status", HttpStatus.OK.value());
-        response.put("data", userService.findByUsername(username));
+        response.put("data", profile);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -114,7 +128,7 @@ public class UserController {
     @GetMapping("/all")
     public ResponseEntity<Map<String, Object>> getAllUsers() {
         try {
-            List<User> users = userService.findAll();
+            List<UserDTO> users = userService.findAll();
             Map<String, Object> response = new LinkedHashMap<>();
             response.put("status", HttpStatus.OK.value());
             response.put("data", users);
@@ -132,10 +146,12 @@ public class UserController {
         User currentUser = userService.findByUsername(userName).get();
         System.out.println("currentUser: " + currentUser);
         Map<String, Object> response = new LinkedHashMap<>();
-        List<User> users = null;
+        List<UserDTO> users = null;
         String role = authServiceClient.getRoleByUserId(currentUser.getUserId());
         if (role.equals("SUPER")) {
+
             users = userService.findAll();
+            System.out.println("users: " + users);
             response.put("status", HttpStatus.OK.value());
             response.put("data", users);
             return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -217,7 +233,7 @@ public class UserController {
         }
     }
     @PutMapping("/update/{id}")
-    public ResponseEntity<Map<String, Object>>updateUser(@PathVariable("id") Long id, @Valid @RequestBody UserDTO userDTO, BindingResult bindingResult) {
+    public ResponseEntity<Map<String, Object>>updateUser(@PathVariable("id") Long id, @Valid @RequestBody UserUpdateDTO userDTO, BindingResult bindingResult) {
         try {
             Map<String, Object> response = new LinkedHashMap<>();
             if (bindingResult.hasErrors()) {
@@ -243,7 +259,8 @@ public class UserController {
                     AuthUser authUser = new AuthUser();
                     authUser.setId(user.getUserId());
                     authUser.setUsername(userDTO.getUsername());
-                    authUser.setPassword(userDTO.getPassword());
+                    authUser.setEmail(userDTO.getEmail());
+//                    authUser.setPassword(userDTO.getPassword());
                     ResponseEntity<Map<String, Object>> authResponse = authServiceClient.updateAuthUser(authUser);
                     if(authResponse.getStatusCode() != HttpStatus.OK){
                         return authResponse;
@@ -337,7 +354,7 @@ public class UserController {
         System.out.println("keyword: " + keyword);
         System.out.println("gender: " + gender);
         System.out.println("role: " + role);
-        List<User> users = userService.filterUsers(keyword, gender, role);
+        List<UserDTO> users = userService.filterUsers(keyword, gender, role);
         Map<String, Object> response = new LinkedHashMap<String, Object>();
         response.put("status", HttpStatus.OK.value());
         response.put("data", users);

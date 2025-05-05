@@ -1,5 +1,6 @@
 package iuh.fit.se.orderservice.services;
 
+import iuh.fit.se.orderservice.dtos.OrderDTO;
 import iuh.fit.se.orderservice.dtos.OrderRequest;
 import iuh.fit.se.orderservice.dtos.OrderStatistic;
 import iuh.fit.se.orderservice.entities.Order;
@@ -14,15 +15,16 @@ public interface OrderService {
 
     public Order findByOrderNumber(String orderNumber);
 
-    public List<Order> findAll();
+    public List<OrderDTO> findAll();
 
+    public OrderDTO findOrderFullInfo(Long id);
     public Order findById(Long id);
 
     public boolean deleteById(Long id);
 
     public Order save(Order order);
 
-    public List<Order> filterOrders(String keyword, String status, String sort);
+    public List<OrderDTO> filterOrders(String keyword, String status, String sort);
 
     public List<OrderStatistic> getPurchasedOrder();
 
@@ -36,9 +38,9 @@ public interface OrderService {
 
     public Map<String, Double> getStatusPercentageByYear(int year);
 
-    public List<Order> getOrdersByYearAndMonth(int year, Integer month);
+    public List<OrderDTO> getOrdersByYearAndMonth(int year, Integer month);
 
-    public void exportOrderData(List<Order> orders, HttpServletResponse response) throws IOException;
+    public void exportOrderData(List<OrderDTO> orders, HttpServletResponse response) throws IOException;
 
-    public List<Order> findOrdersByUserId(Long userId);
+    public List<OrderDTO> findOrdersByUserId(Long userId);
 }

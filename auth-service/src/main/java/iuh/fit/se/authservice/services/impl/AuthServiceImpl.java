@@ -1,11 +1,8 @@
 package iuh.fit.se.authservice.services.impl;
 
 import iuh.fit.se.authservice.configs.JwtService;
-import iuh.fit.se.authservice.dtos.AuthUserChangePassword;
+import iuh.fit.se.authservice.dtos.*;
 import iuh.fit.se.authservice.events.publishers.UserEventPublisher;
-import iuh.fit.se.authservice.dtos.AuthRequest;
-import iuh.fit.se.authservice.dtos.AuthResponse;
-import iuh.fit.se.authservice.dtos.RegisterRequest;
 import iuh.fit.se.authservice.events.dtos.UserProfileCreatedEvent;
 import iuh.fit.se.authservice.entities.RefreshToken;
 import iuh.fit.se.authservice.entities.Role;
@@ -13,13 +10,16 @@ import iuh.fit.se.authservice.entities.User;
 import iuh.fit.se.authservice.repository.RefreshTokenRepository;
 import iuh.fit.se.authservice.repository.UserRepository;
 import iuh.fit.se.authservice.services.AuthService;
+import iuh.fit.se.authservice.services.OtpService;
 import iuh.fit.se.authservice.services.RefreshTokenService;
+import iuh.fit.se.authservice.utils.OtpGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
@@ -46,6 +46,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
+
+    private OtpGenerator otpGenerator = new OtpGenerator();
+
+    @Autowired
+    private OtpService otpService;
 
     @Override
     public AuthResponse login(AuthRequest request) {
@@ -82,43 +87,37 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(refreshToken.getToken()) // Trả về Refresh Token
                 .role(user.getRole().name())
                 .username(user.getUsername())
+                .userId(user.getId())
                 .build();
     }
 
     @Override
     public Map<String, Object> register(RegisterRequest request) {
         Map<String, Object> response = new HashMap<>();
-
+        // 1. Kiểm tra username đã tồn tại chưa
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             response.put("status", HttpStatus.BAD_REQUEST.value());
             response.put("message", "Username already exists");
             return response;
         }
-
-        // Tạo user mới
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setEmail(request.getEmail());
-        user.setRole(request.getRole() != null ? request.getRole() : Role.USER);
-
-        userRepository.save(user);
-        UserProfileCreatedEvent event = new UserProfileCreatedEvent(
-                user.getId(), user.getUsername(), request.getFullname(), request.getDob() != null ? request.getDob() : new Date(),
-                request.getPhone(), request.getAddress() != null ? request.getAddress() : "No address provided", request.isGender()
-        );
-        userEventPublisher.publishUserProfileCreated(event);
-
-        // ✅ Trả về thông tin user + token
+        // 2. Kiểm tra rate limit
+        if (!otpService.isAllowedToSendOtp(request.getEmail())) {
+            response.put("status", HttpStatus.TOO_MANY_REQUESTS.value());
+            response.put("message", "Bạn đã gửi OTP quá nhiều lần. Vui lòng thử lại sau 1 phút.");
+            return response;
+        }
+        //3. Tạo OTP
+        String otp = OtpGenerator.generateOtp();
+        otpService.saveRequestAndOtp(request, otp);
+        //4. Gửi OTP qua email
+        OtpEmailEvent otpEmailEvent = new OtpEmailEvent(request.getEmail(), otp);
+        userEventPublisher.publishSendOtpEamil(otpEmailEvent);
+        // 5. Trả phản hồi
         response.put("status", HttpStatus.OK.value());
-        response.put("message", "Đăng ký tài khoản thành công");
-//        response.put("accessToken", accessToken);
-//        response.put("refreshToken", refreshToken.getToken());
-        response.put("username", user.getUsername());
-        response.put("role", user.getRole().toString());
-
+        response.put("message", "Đăng ký tài khoản thành công. Vui lòng kiểm tra email để xác thực.");
         return response;
     }
+
     @Override
     public AuthResponse refresh(String refreshTokenRequest) {
         RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenRequest)
@@ -139,6 +138,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
     @Override
+    @Transactional
     public void logout(String refreshTokenRequest) {
         RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenRequest)
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
@@ -156,6 +156,7 @@ public class AuthServiceImpl implements AuthService {
         return userRepository.findById(userId).map(user -> user.getRole().name()).orElse(null);
     }
     @Override
+    @Transactional
     public void deleteAuthUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new RuntimeException("Không tìm thấy người dùng với ID: " + id);
@@ -196,5 +197,13 @@ public class AuthServiceImpl implements AuthService {
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng");
         }
+    }
+
+    @Override
+    public void updatePassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng"));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }

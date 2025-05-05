@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -48,6 +49,9 @@ public class OrderController {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @Value("${vnpay.hash_secret}")
     private String VNP_HASH_SECRET;
@@ -140,9 +144,11 @@ public class OrderController {
             notification.setCreatedAt(LocalDateTime.now());
             notification.setRead(false);
             orderEventPublisher.sendNotification(notification);
+            messagingTemplate.convertAndSend("/topic/orders", notification);
             ResponseEntity<Map<String, Object>> responseAuth = authServiceClient.getAuthUserEmailById(order.getUserId());
             String email = (String) responseAuth.getBody().get("data");
             orderEventPublisher.sendEmail(order, email, productTable);
+            responseServlet.sendRedirect("http://localhost:8889/payment-result?status=success&txnRef=" + txnRef);
             responseRequest.put("status", HttpStatus.OK.value());
             responseRequest.put("message", "Payment successful!");
             return ResponseEntity.ok(responseRequest);
@@ -155,7 +161,8 @@ public class OrderController {
             notification.setCreatedAt(LocalDateTime.now());
             notification.setRead(false);
             orderEventPublisher.sendNotification(notification);
-//            responseServlet.sendRedirect("http://localhost:8081/payment-result?status=failed&txnRef=" + txnRef);
+            messagingTemplate.convertAndSend("/topic/orders", notification);
+            responseServlet.sendRedirect("http://localhost:8889/payment-result?status=failed&txnRef=" + txnRef);
             responseRequest.put("status", HttpStatus.BAD_REQUEST.value());
             responseRequest.put("message", "Payment failed!");
             return ResponseEntity.ok(responseRequest);
@@ -165,7 +172,7 @@ public class OrderController {
     @GetMapping("/all")
     public ResponseEntity<Map<String, Object>> getAllOrders() {
         Map<String, Object> response = new LinkedHashMap<String, Object>();
-        List<Order> orders = orderService.findAll();
+        List<OrderDTO> orders = orderService.findAll();
         orders.sort((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()));
         response.put("status", HttpStatus.OK.value());
         response.put("data", orders);
@@ -186,6 +193,14 @@ public class OrderController {
         response.put("data", orderService.findById(id));
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+    @GetMapping("/full/{id}")
+    public ResponseEntity<Map<String, Object>> findOrderFullInfoById(@PathVariable Long id) {
+        Map<String, Object> response = new LinkedHashMap<String, Object>();
+        response.put("status", HttpStatus.OK.value());
+        response.put("data", orderService.findOrderFullInfo(id));
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Map<String, Object>> deleteOrderById(@PathVariable Long id) {
         Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -259,17 +274,18 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getStatusPercentageByYear(year));
     }
     @GetMapping("/list")
-    public ResponseEntity<List<Order>> findByYearAndMonth(@RequestParam int year, @RequestParam(required = false) Integer month) {
+    public ResponseEntity<List<OrderDTO>> findByYearAndMonth(@RequestParam int year, @RequestParam(required = false) Integer month) {
         return ResponseEntity.ok(orderService.getOrdersByYearAndMonth(year, month));
     }
     @GetMapping("/orders-export")
     public void exportOrders(@RequestParam int year, @RequestParam(required = false) Integer month, HttpServletResponse response) throws IOException {
         System.out.println("Exporting orders");
-        List<Order> orders = orderService.getOrdersByYearAndMonth(year, month);
+        List<OrderDTO> orders = orderService.getOrdersByYearAndMonth(year, month);
         orderService.exportOrderData(orders, response);
     }
     @GetMapping("/orders-history")
     public ResponseEntity<Map<String, Object>> getOrderByUserName(@RequestParam Long userId) {
+        System.out.println("Get order history for user: " + userId);
         Map<String, Object> response = new LinkedHashMap<String, Object>();
         response.put("status", HttpStatus.OK.value());
         response.put("data", orderService.findOrdersByUserId(userId));

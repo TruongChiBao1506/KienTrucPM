@@ -25,6 +25,7 @@ import jakarta.persistence.criteria.Predicate;
 import org.modelmapper.ModelMapper;
 
 @Service
+@Transactional
 public class GlassServiceImpl implements GlassService {
 
     @Autowired

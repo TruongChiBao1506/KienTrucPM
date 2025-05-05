@@ -20,7 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.io.IOException;
@@ -56,8 +58,12 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
 
     @Override
+    @Transactional
     public void createOrder(@RequestBody OrderRequest orderRequest) {
         Order order = new Order();
         order.setUserId(orderRequest.getUserId());
@@ -112,6 +118,7 @@ public class OrderServiceImpl implements OrderService {
         notification.setCreatedAt(LocalDateTime.now());
         notification.setRead(false);
         orderEventPublisher.sendNotification(notification);
+        messagingTemplate.convertAndSend("/topic/orders", notification);
 //        ResponseEntity<Map<String, Object>> responseNotification = notificationServiceClient.saveNotification(notification);
 //        if (responseNotification.getStatusCode().is2xxSuccessful()){
 //            System.out.println("Notification sent successfully");
@@ -148,8 +155,95 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> findAll() {
-        return orderRepository.findAll();
+    public List<OrderDTO> findAll() {
+        List<Order> orders = orderRepository.findAll();
+        List<OrderDTO> orderDTOs = new ArrayList<>();
+        for (Order order : orders) {
+            OrderDTO orderDTO = new OrderDTO();
+            // Lấy thông tin người dùng từ UserServiceClient
+            ResponseEntity<Map<String, Object>> response = userServiceClient.getUserProfileById(order.getUserId());
+            if (response.getStatusCode().is2xxSuccessful()) {
+                List<OrderItemUserDTO> listOrderItem = new ArrayList<>();
+                orderDTO.setOrderNumber(order.getOrderNumber());
+                orderDTO.setOrderDate(order.getOrderDate());
+                orderDTO.setId(order.getId());
+                orderDTO.setStatus(order.getStatus());
+                orderDTO.setPaymentMethod(order.getPaymentMethod());
+                orderDTO.setShippingAddress(order.getShippingAddress());
+                orderDTO.setTotalAmount(order.getTotalAmount());
+                orderDTO.setUser(objectMapper.convertValue(response.getBody().get("data"), UserDTO.class));
+                String email = (String) authServiceClient.getAuthUserEmailById(order.getUserId()).getBody().get("data");
+                orderDTO.getUser().setEmail(email);
+                for (OrderItem oi : order.getOrderItems()) {
+                // Lấy thông tin sản phẩm từ ProductServiceClient
+                    OrderItemFromProductDTO responseProducts = productServiceClient.getProductById(oi.getProductId());
+                    OrderItemUserDTO orderItemUserDTO = new OrderItemUserDTO();
+                    orderItemUserDTO.setOrderItemId(oi.getOrderItemId());
+                    orderItemUserDTO.setQuantity(oi.getQuantity());
+                    orderItemUserDTO.setUnitPrice(oi.getUnitPrice());
+                    orderItemUserDTO.setTotalPrice(oi.getTotalPrice());
+                    orderItemUserDTO.setProduct(responseProducts);
+                    listOrderItem.add(orderItemUserDTO);
+                }
+            orderDTO.setOrderItems(listOrderItem);
+
+            } else {
+                System.out.println("Failed to fetch user data for order ID: " + order.getId());
+            }
+            orderDTOs.add(orderDTO);
+        }
+        return orderDTOs;
+    }
+
+    @Override
+    public OrderDTO findOrderFullInfo(Long id) {
+        Order order = orderRepository.findById(id).orElse(null);
+        if (order == null) {
+            return null;
+        }
+
+        OrderDTO orderDTO = new OrderDTO();
+
+        // Lấy thông tin người dùng từ UserServiceClient
+        ResponseEntity<Map<String, Object>> response = userServiceClient.getUserProfileById(order.getUserId());
+        if (response.getStatusCode().is2xxSuccessful()) {
+            orderDTO.setOrderNumber(order.getOrderNumber());
+            orderDTO.setOrderDate(order.getOrderDate());
+            orderDTO.setId(order.getId());
+            orderDTO.setStatus(order.getStatus());
+            orderDTO.setPaymentMethod(order.getPaymentMethod());
+            orderDTO.setShippingAddress(order.getShippingAddress());
+            orderDTO.setTotalAmount(order.getTotalAmount());
+
+            // Mapping user
+            UserDTO userDTO = objectMapper.convertValue(response.getBody().get("data"), UserDTO.class);
+
+            // Lấy email từ AuthServiceClient
+            String email = (String) authServiceClient.getAuthUserEmailById(order.getUserId()).getBody().get("data");
+            userDTO.setEmail(email);
+            orderDTO.setUser(userDTO);
+
+            // Mapping orderItems
+            List<OrderItemUserDTO> listOrderItem = new ArrayList<>();
+            for (OrderItem oi : order.getOrderItems()) {
+                OrderItemUserDTO orderItemUserDTO = new OrderItemUserDTO();
+                orderItemUserDTO.setOrderItemId(oi.getOrderItemId());
+                orderItemUserDTO.setQuantity(oi.getQuantity());
+                orderItemUserDTO.setUnitPrice(oi.getUnitPrice());
+                orderItemUserDTO.setTotalPrice(oi.getTotalPrice());
+
+                // Lấy thông tin sản phẩm từ ProductServiceClient
+                OrderItemFromProductDTO productDTO = productServiceClient.getProductById(oi.getProductId());
+                orderItemUserDTO.setProduct(productDTO);
+
+                listOrderItem.add(orderItemUserDTO);
+            }
+            orderDTO.setOrderItems(listOrderItem);
+        } else {
+            System.out.println("Failed to fetch user data for order ID: " + order.getId());
+        }
+
+        return orderDTO;
     }
 
     @Override
@@ -158,6 +252,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public boolean deleteById(Long id) {
         if(this.findById(id)!= null) {
             orderRepository.deleteById(id);
@@ -167,43 +262,85 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public Order save(Order order) {
         return orderRepository.save(order);
     }
 
     @Override
-    public List<Order> filterOrders(String keyword, String status, String sort) {
+    public List<OrderDTO> filterOrders(String keyword, String status, String sort) {
         Specification<Order> spec = Specification.where(null);
 
-        // Thêm điều kiện tìm kiếm theo keyword nếu có
         if (keyword != null && !keyword.isEmpty()) {
             spec = spec.and(containsKeyword(keyword));
         }
 
-        // Thêm điều kiện lọc theo trạng thái nếu có
         if (status != null && !status.isEmpty()) {
             spec = spec.and(hasStatus(status));
         }
 
-        // Xác định thứ tự sắp xếp
         Sort sortOption = Sort.unsorted();
-        if ("asc".equals(sort)) {
-            sortOption = Sort.by("totalAmount").ascending(); // Sắp xếp giá tăng dần
-        } else if ("desc".equals(sort)) {
-            sortOption = Sort.by("totalAmount").descending(); // Sắp xếp giá giảm dần
+        if ("asc".equalsIgnoreCase(sort)) {
+            sortOption = Sort.by("totalAmount").ascending();
+        } else if ("desc".equalsIgnoreCase(sort)) {
+            sortOption = Sort.by("totalAmount").descending();
         }
 
-        // Trả về danh sách kết quả sau khi lọc
-        return orderRepository.findAll(spec, sortOption);
+        List<Order> orders = orderRepository.findAll(spec, sortOption);
+        List<OrderDTO> orderDTOs = new ArrayList<>();
+
+        for (Order order : orders) {
+            OrderDTO orderDTO = new OrderDTO();
+            orderDTO.setOrderNumber(order.getOrderNumber());
+            orderDTO.setOrderDate(order.getOrderDate());
+            orderDTO.setId(order.getId());
+            orderDTO.setStatus(order.getStatus());
+            orderDTO.setPaymentMethod(order.getPaymentMethod());
+            orderDTO.setShippingAddress(order.getShippingAddress());
+            orderDTO.setTotalAmount(order.getTotalAmount());
+
+            // Lấy thông tin người dùng
+            ResponseEntity<Map<String, Object>> response = userServiceClient.getUserProfileById(order.getUserId());
+            if (response.getStatusCode().is2xxSuccessful()) {
+                UserDTO userDTO = objectMapper.convertValue(response.getBody().get("data"), UserDTO.class);
+                // Gọi Auth Service để lấy email
+                ResponseEntity<Map<String, Object>> emailResponse = authServiceClient.getAuthUserEmailById(order.getUserId());
+                if (emailResponse.getStatusCode().is2xxSuccessful()) {
+                    String email = (String) emailResponse.getBody().get("data");
+                    userDTO.setEmail(email);
+                }
+                orderDTO.setUser(userDTO);
+            } else {
+                System.out.println("Failed to fetch user data for order ID: " + order.getId());
+            }
+
+            // Lấy thông tin các OrderItem và sản phẩm tương ứng
+            List<OrderItemUserDTO> listOrderItem = new ArrayList<>();
+            for (OrderItem oi : order.getOrderItems()) {
+                OrderItemUserDTO orderItemUserDTO = new OrderItemUserDTO();
+                orderItemUserDTO.setOrderItemId(oi.getOrderItemId());
+                orderItemUserDTO.setQuantity(oi.getQuantity());
+                orderItemUserDTO.setUnitPrice(oi.getUnitPrice());
+                orderItemUserDTO.setTotalPrice(oi.getTotalPrice());
+
+                // Lấy sản phẩm từ ProductServiceClient
+                OrderItemFromProductDTO responseProduct = productServiceClient.getProductById(oi.getProductId());
+                orderItemUserDTO.setProduct(responseProduct);
+                listOrderItem.add(orderItemUserDTO);
+            }
+            orderDTO.setOrderItems(listOrderItem);
+
+            orderDTOs.add(orderDTO);
+        }
+
+        return orderDTOs;
     }
     // Tìm kiếm theo từ khóa trong các trường cụ thể
     public static Specification<Order> containsKeyword(String keyword) {
         return (root, query, criteriaBuilder) -> {
             String likePattern = "%" + keyword.toLowerCase() + "%";
             return criteriaBuilder.or(
-                    criteriaBuilder.like(criteriaBuilder.lower(root.get("id").as(String.class)), likePattern), // Tìm theo ID
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("orderNumber")), likePattern),         // Tìm theo Order Number
-                    criteriaBuilder.like(criteriaBuilder.lower(root.join("user").get("fullname")), likePattern),  // Tìm theo tên User
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("shippingAddress")), likePattern),    // Tìm theo địa chỉ giao hàng
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("paymentMethod")), likePattern)       // Tìm theo phương thức thanh toán
             );
@@ -319,18 +456,45 @@ public class OrderServiceImpl implements OrderService {
         return percentageMap;
     }
     @Override
-    public List<Order> getOrdersByYearAndMonth(int year, Integer month) {
-        List<Order> orders;
+    public List<OrderDTO> getOrdersByYearAndMonth(int year, Integer month) {
+        List<OrderDTO> orderDTOs = new ArrayList<>();
         if (month != null) {
-            orders = orderRepository.findByYearAndMonth(year, month);
+            List<Order> orders = orderRepository.findByYearAndMonth(year, month);
+            for (Order order : orders) {
+                OrderDTO orderDTO = new OrderDTO();
+                orderDTO.setId(order.getId());
+                orderDTO.setOrderNumber(order.getOrderNumber());
+                orderDTO.setOrderDate(order.getOrderDate());
+                orderDTO.setTotalAmount(order.getTotalAmount());
+                orderDTO.setStatus(order.getStatus());
+                orderDTO.setPaymentMethod(order.getPaymentMethod());
+                orderDTO.setShippingAddress(order.getShippingAddress());
+                UserDTO userDTO = objectMapper.convertValue(userServiceClient.getUserProfileById(order.getUserId()).getBody().get("data"), UserDTO.class);
+                orderDTO.setUser(userDTO);
+                orderDTOs.add(orderDTO);
+            }
+
         } else {
-            orders = orderRepository.findByYear(year);
+            List<Order> orders = orderRepository.findByYear(year);
+            for (Order order : orders) {
+                OrderDTO orderDTO = new OrderDTO();
+                orderDTO.setId(order.getId());
+                orderDTO.setOrderNumber(order.getOrderNumber());
+                orderDTO.setOrderDate(order.getOrderDate());
+                orderDTO.setTotalAmount(order.getTotalAmount());
+                orderDTO.setStatus(order.getStatus());
+                orderDTO.setPaymentMethod(order.getPaymentMethod());
+                orderDTO.setShippingAddress(order.getShippingAddress());
+                UserDTO userDTO = objectMapper.convertValue(userServiceClient.getUserProfileById(order.getUserId()).getBody().get("data"), UserDTO.class);
+                orderDTO.setUser(userDTO);
+                orderDTOs.add(orderDTO);
+            }
         }
-        return orders;
+        return orderDTOs;
     }
 
     @Override
-    public void exportOrderData(List<Order> orders, HttpServletResponse response) throws IOException {
+    public void exportOrderData(List<OrderDTO> orders, HttpServletResponse response) throws IOException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Orders");
 
@@ -370,11 +534,11 @@ public class OrderServiceImpl implements OrderService {
 
         // Điền dữ liệu
         double totalRevenue = 0;
-        for (Order order : orders) {
+        for (OrderDTO order : orders) {
             Row row = sheet.createRow(currentRowIndex++);
 
             row.createCell(0).setCellValue(order.getOrderNumber());
-            row.createCell(1).setCellValue(order.getUserId()); // User giả định có trường "name"
+            row.createCell(1).setCellValue(order.getUser().getUsername()); // User giả định có trường "name"
             row.createCell(2).setCellValue(order.getOrderDate().toString());
             row.createCell(3).setCellValue(order.getShippingAddress());
             row.createCell(4).setCellValue(order.getPaymentMethod());
@@ -387,8 +551,56 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> findOrdersByUserId(Long userId) {
-        return orderRepository.findOrdersByUserId(userId);
+    public List<OrderDTO> findOrdersByUserId(Long userId) {
+
+        List<Order> orders = orderRepository.findOrdersByUserId(userId);
+        List<OrderDTO> orderDTOs = new ArrayList<>();
+
+        for (Order order : orders) {
+            OrderDTO orderDTO = new OrderDTO();
+
+            // Lấy thông tin người dùng từ UserServiceClient
+            ResponseEntity<Map<String, Object>> response = userServiceClient.getUserProfileById(order.getUserId());
+            if (response.getStatusCode().is2xxSuccessful()) {
+                orderDTO.setOrderNumber(order.getOrderNumber());
+                orderDTO.setOrderDate(order.getOrderDate());
+                orderDTO.setId(order.getId());
+                orderDTO.setStatus(order.getStatus());
+                orderDTO.setPaymentMethod(order.getPaymentMethod());
+                orderDTO.setShippingAddress(order.getShippingAddress());
+                orderDTO.setTotalAmount(order.getTotalAmount());
+
+                // Mapping user
+                UserDTO userDTO = objectMapper.convertValue(response.getBody().get("data"), UserDTO.class);
+
+                // Lấy email từ AuthServiceClient
+                String email = (String) authServiceClient.getAuthUserEmailById(order.getUserId()).getBody().get("data");
+                userDTO.setEmail(email);
+                orderDTO.setUser(userDTO);
+
+                // Mapping orderItems
+                List<OrderItemUserDTO> listOrderItem = new ArrayList<>();
+                for (OrderItem oi : order.getOrderItems()) {
+                    OrderItemUserDTO orderItemUserDTO = new OrderItemUserDTO();
+                    orderItemUserDTO.setOrderItemId(oi.getOrderItemId());
+                    orderItemUserDTO.setQuantity(oi.getQuantity());
+                    orderItemUserDTO.setUnitPrice(oi.getUnitPrice());
+                    orderItemUserDTO.setTotalPrice(oi.getTotalPrice());
+
+                    // Lấy thông tin sản phẩm từ ProductServiceClient
+                    OrderItemFromProductDTO productDTO = productServiceClient.getProductById(oi.getProductId());
+                    orderItemUserDTO.setProduct(productDTO);
+
+                    listOrderItem.add(orderItemUserDTO);
+                }
+                orderDTO.setOrderItems(listOrderItem);
+            } else {
+                System.out.println("Failed to fetch user data for order ID: " + order.getId());
+            }
+            orderDTOs.add(orderDTO);
+        }
+        return orderDTOs;
+
     }
 
 

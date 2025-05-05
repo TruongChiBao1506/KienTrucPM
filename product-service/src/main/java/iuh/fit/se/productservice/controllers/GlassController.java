@@ -78,14 +78,14 @@ public class GlassController {
 	public ResponseEntity<Map<String, Object>> getByCategoryEyeGlass() {
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
 		response.put("status", HttpStatus.OK.value());
-		response.put("data", glassService.findByCategory(1L));
+		response.put("data", glassService.findByCategory(2L));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	@GetMapping("/sunglasses")
 	public ResponseEntity<Map<String, Object>> getByCategorySunGlass() {
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
 		response.put("status", HttpStatus.OK.value());
-		response.put("data", glassService.findByCategory(2L));
+		response.put("data", glassService.findByCategory(1L));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	@GetMapping("/eyeglasses/men")
@@ -106,7 +106,7 @@ public class GlassController {
 		System.out.println(filter);
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
 		response.put("status", HttpStatus.OK.value());
-		response.put("data", glassService.findByCategoryAndGenderAndFilter(1L, true, filter));
+		response.put("data", glassService.findByCategoryAndGenderAndFilter(2L, true, filter));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	@GetMapping("/eyeglasses/women")
@@ -127,7 +127,7 @@ public class GlassController {
 		System.out.println(filter);
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
 		response.put("status", HttpStatus.OK.value());
-		response.put("data", glassService.findByCategoryAndGenderAndFilter(1L, false, filter));
+		response.put("data", glassService.findByCategoryAndGenderAndFilter(2L, false, filter));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	@GetMapping("/sunglasses/men")
@@ -148,7 +148,7 @@ public class GlassController {
 		System.out.println(filter);
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
 		response.put("status", HttpStatus.OK.value());
-		response.put("data", glassService.findByCategoryAndGenderAndFilter(2L, true, filter));
+		response.put("data", glassService.findByCategoryAndGenderAndFilter(1L, true, filter));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	@GetMapping("/sunglasses/women")
@@ -169,7 +169,7 @@ public class GlassController {
 		System.out.println(filter);
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
 		response.put("status", HttpStatus.OK.value());
-		response.put("data", glassService.findByCategoryAndGenderAndFilter(2L, false, filter));
+		response.put("data", glassService.findByCategoryAndGenderAndFilter(1L, false, filter));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
 	
@@ -249,6 +249,7 @@ public class GlassController {
 				glass.setColorCode(glassDTO.getColorCode());
 				glass.setColorName(glassDTO.getColorName());
 				glass.setDescription(glassDTO.getDescription());
+				glass.setGender(glassDTO.isGender());
 				glass.setStock(glassDTO.getStock());
 				glass.setImageFrontUrl(glassDTO.getImageFrontUrl());
 				glass.setImageSideUrl(glassDTO.getImageSideUrl());

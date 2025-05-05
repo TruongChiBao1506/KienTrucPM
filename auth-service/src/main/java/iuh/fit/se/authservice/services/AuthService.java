@@ -21,5 +21,6 @@ public interface AuthService {
     public User save(User user);
     public User findById(Long id);
     public User findByUsername(String username);
-    public void changePassword(AuthUserChangePassword authUserChangePassword);;
+    public void changePassword(AuthUserChangePassword authUserChangePassword);
+    public void updatePassword(String email, String newPassword);
 }

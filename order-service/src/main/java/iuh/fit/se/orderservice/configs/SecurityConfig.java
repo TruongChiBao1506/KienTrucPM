@@ -29,7 +29,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/orders/vnpay-return**").permitAll()
+                        .requestMatchers("/api/orders/vnpay-return**","/ws/**").permitAll()
                         .requestMatchers("/api/orders/**").hasAnyRole("USER","ADMIN", "SUPER")
                 )
                 .sessionManagement(session -> session
@@ -50,6 +50,10 @@ public class SecurityConfig {
             String path = request.getRequestURI();
 
             if (path != null && path.startsWith("/api/orders/vnpay-return")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            if (path != null && path.startsWith("/ws")) {
                 filterChain.doFilter(request, response);
                 return;
             }

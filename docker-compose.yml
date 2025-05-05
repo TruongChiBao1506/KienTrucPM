@@ -53,7 +53,12 @@ services:
       - "5601:5601"
     depends_on:
       - elasticsearch
-
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
 volumes:
   elasticsearch-data:
     driver: local

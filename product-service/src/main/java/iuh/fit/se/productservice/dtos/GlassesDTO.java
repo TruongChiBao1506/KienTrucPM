@@ -37,11 +37,7 @@ public class GlassesDTO {
     private String colorName;
     @Pattern(regexp = "^#[0-9a-fA-F]{6}$", message = "Mã màu không hợp lệ (phải ở dạng HEX, ví dụ: #FFFFFF)")
     private String colorCode;
-    @NotBlank(message = "Ảnh mặt trước không được để trống")
-    @Pattern(regexp = ".*\\.(png|jpg|jpeg|avif)$", message = "Ảnh mặt trước chỉ được phép có định dạng png, jpg, hoặc jpeg")
     private String imageFrontUrl;
-    @NotBlank(message = "Ảnh mặt bên không được để trống")
-    @Pattern(regexp = ".*\\.(png|jpg|jpeg|avif)$", message = "Ảnh mặt bên chỉ được phép có định dạng png, jpg, hoặc jpeg")
     private String imageSideUrl;
     
 	private boolean gender;

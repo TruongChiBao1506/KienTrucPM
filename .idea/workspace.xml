@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="08d585e9-b2f1-401f-97c9-d2fb074d8867" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/dtos/OtpEmailEvent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/dtos/OtpVerificationRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/OtpService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/impl/OtpServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/utils/JwtTokenUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/utils/OtpGenerator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/.gitattributes" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/mvnw" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/mvnw.cmd" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/CartServiceApplication.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/configs/RedisConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/configs/SecurityConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/controllers/CartController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/entities/Cart.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/service/CartService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/service/impl/CartServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/src/main/resources/application.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/src/test/java/iuh/fit/se/cartservice/CartServiceApplicationTests.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/.gitattributes" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/mvnw" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/mvnw.cmd" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/ChatbotServiceApplication.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/client/ProductServiceClient.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/config/JacksonConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/controller/ChatbotController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/dto/ChatRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/dto/ChatResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/dto/GlassDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/dto/NavigationSuggestion.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/dto/ProductSuggestion.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/model/Conversation.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/model/Message.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/repository/ConversationRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ChatbotPromptService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ChatbotService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ConversationService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/GeminiService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/NavigationService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductDataService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductIntentAnalyzer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/RateLimitService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/resources/application.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/test/java/iuh/fit/se/chatbotservice/ChatbotServiceApplicationTests.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/email-service/src/main/java/iuh/fit/se/emailservice/dtos/OtpEmailEvent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/logs/user-service.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/configs/WebSocketConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/dtos/OrderDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/dtos/OrderItemUserDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/dtos/OrderStatisticListDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/dtos/UserDTO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/controllers/CategoryController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/dtos/UserUpdateDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/KienTrucPM.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/iuh/fit/se/apigateway/configs/CorsConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/iuh/fit/se/apigateway/configs/CorsConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/iuh/fit/se/apigateway/filter/AuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/iuh/fit/se/apigateway/filter/AuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/controllers/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/controllers/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/dtos/AuthResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/dtos/AuthResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/events/publishers/UserEventPublisher.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/events/publishers/UserEventPublisher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/AuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/impl/AuthServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/impl/AuthServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email-service/src/main/java/iuh/fit/se/emailservice/events/listener/EmailEventListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/email-service/src/main/java/iuh/fit/se/emailservice/events/listener/EmailEventListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/email-service/src/main/java/iuh/fit/se/emailservice/utils/EmailTemplateUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/email-service/src/main/java/iuh/fit/se/emailservice/utils/EmailTemplateUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notification-service/src/main/java/iuh/fit/se/notificationservice/controllers/notificationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/notification-service/src/main/java/iuh/fit/se/notificationservice/controllers/notificationController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notification-service/src/main/java/iuh/fit/se/notificationservice/services/impl/NotificationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/notification-service/src/main/java/iuh/fit/se/notificationservice/services/impl/NotificationServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/configs/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/configs/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/controllers/OrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/controllers/OrderController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/feign/UserServiceClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/feign/UserServiceClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/OrderService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/OrderItemServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/OrderItemServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/OrderServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/OrderServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/VNPayServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/VNPayServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Repositories/GlassRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Repositories/GlassRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/FrameSizeServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/FrameSizeServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/GlassServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/GlassServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/SpecificationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/SpecificationServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/configs/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/configs/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/controllers/GlassController.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/controllers/GlassController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/dtos/GlassesDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/dtos/GlassesDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/review-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/review-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/service/impl/ReviewServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/service/impl/ReviewServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/configs/FeignConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/configs/FeignConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/controllers/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/controllers/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/dtos/UserDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/dtos/UserDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/dtos/UserProfileDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/dtos/UserProfileDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/feign/AuthServiceClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/feign/AuthServiceClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/impl/UserIndexServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/impl/UserIndexServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;TruongChiBao1506&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/TruongChiBao1506/KienTrucPM.git&quot;,
+    &quot;accountId&quot;: &quot;708e303e-2523-40e6-9321-cd5107db085b&quot;
+  }
+}</component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2wLpgTgA2ddqHrQmGGCwApGP90l" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.ApiGatewayApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.AuthServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.CartServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.ChatbotServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.EmailServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.EurekaServerApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.NotificationServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.OrderServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.ProductServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.ReviewServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.UserServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;notification-email&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;run.configurations.included.in.services&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.projectsettings.compiler.annotationProcessors&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunDashboard">
+    <option name="configurationTypes">
+      <set>
+        <option value="KtorApplicationConfigurationType" />
+        <option value="MicronautRunConfigurationType" />
+        <option value="QuarkusRunConfigurationType" />
+        <option value="SpringBootApplicationConfigurationType" />
+      </set>
+    </option>
+  </component>
+  <component name="RunManager" selected="Spring Boot.ApiGatewayApplication">
+    <configuration name="ApiGatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="api-gateway" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="iuh.fit.se.apigateway.ApiGatewayApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="AuthServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="auth-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="iuh.fit.se.authservice.AuthServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="CartServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="cart-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="iuh.fit.se.cartservice.CartServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ChatbotServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="chatbot-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="iuh.fit.se.chatbotservice.ChatbotServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="EmailServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="email-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="iuh.fit.se.emailservice.EmailServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="EurekaServerApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="eureka-server" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="iuh.fit.se.eurekaserver.EurekaServerApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NotificationServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="notification-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="iuh.fit.se.notificationservice.NotificationServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="OrderServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="order-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="iuh.fit.se.orderservice.OrderServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ProductServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="product-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="iuh.fit.se.productservice.ProductServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ReviewServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="review-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="iuh.fit.se.reviewservice.ReviewServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="UserServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="user-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="iuh.fit.se.userservice.UserServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Spring Boot.ApiGatewayApplication" />
+      <item itemvalue="Spring Boot.ProductServiceApplication" />
+      <item itemvalue="Spring Boot.ReviewServiceApplication" />
+      <item itemvalue="Spring Boot.AuthServiceApplication" />
+      <item itemvalue="Spring Boot.CartServiceApplication" />
+      <item itemvalue="Spring Boot.ChatbotServiceApplication" />
+      <item itemvalue="Spring Boot.EmailServiceApplication" />
+      <item itemvalue="Spring Boot.EurekaServerApplication" />
+      <item itemvalue="Spring Boot.NotificationServiceApplication" />
+      <item itemvalue="Spring Boot.OrderServiceApplication" />
+      <item itemvalue="Spring Boot.UserServiceApplication" />
+    </list>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.25659.59" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.25659.59" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="08d585e9-b2f1-401f-97c9-d2fb074d8867" name="Changes" comment="" />
+      <created>1745830819636</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1745830819636</updated>
+      <workItem from="1745830820824" duration="473000" />
+      <workItem from="1745831316470" duration="323000" />
+      <workItem from="1745831651401" duration="3613000" />
+      <workItem from="1745857265423" duration="9491000" />
+      <workItem from="1745909828482" duration="7660000" />
+      <workItem from="1745938801314" duration="5331000" />
+      <workItem from="1746040331579" duration="780000" />
+      <workItem from="1746082550379" duration="4540000" />
+      <workItem from="1746177243658" duration="2089000" />
+      <workItem from="1746179602963" duration="3009000" />
+      <workItem from="1746258032724" duration="5259000" />
+      <workItem from="1746289509351" duration="5869000" />
+      <workItem from="1746349963652" duration="3376000" />
+      <workItem from="1746366889161" duration="1234000" />
+      <workItem from="1746375081014" duration="4783000" />
+      <workItem from="1746430471447" duration="7600000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

@@ -12,6 +12,7 @@ import iuh.fit.se.orderservice.utils.VNPayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ public class VNPayServiceImpl implements VNPayService {
     private VNPayConfig vnpayConfig;
 
     @Override
+    @Transactional
     public String createVNPayUrlAndCreateOrder(OrderRequest orderRequest) {
         Order order = new Order();
         order.setUserId(orderRequest.getUserId());

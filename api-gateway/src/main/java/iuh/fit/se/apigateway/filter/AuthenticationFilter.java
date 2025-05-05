@@ -28,17 +28,37 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     private static final List<String> OPEN_ENDPOINTS = List.of(
             "/api/auth/login",
             "/api/auth/register",
+            "/api/auth/verify-otp",
             "/api/auth/refresh",
             "/api/auth/logout",
             "/api/auth/get-refresh-token",
+            "/api/auth/forgot-password",
+            "/api/auth/reset-password",
             "/api/orders/vnpay-return",
             "/api/orders/vnpay-return/",
             "/swagger-ui",
             "/swagger-ui/**",
             "/v3/api-docs",
             "/v3/api-docs/**",
-            "/webjars/**"
-
+            "/webjars/**",
+            "/api/products/glasses",
+            "/api/products/eyeglasses/men",
+            "/api/products/eyeglasses/women",
+            "/api/products/sunglasses/men",
+            "/api/products/sunglasses/women",
+            "/api/products/eyeglasses/men**",
+            "/api/products/eyeglasses/women**",
+            "/api/products/sunglasses/men**",
+            "/api/products/sunglasses/women**",
+            "/api/products/brands",
+            "/api/products/shapes",
+            "/api/products/materials",
+            "/api/products/colors",
+            "/api/products/search",
+            "/ws/",
+            "/ws",
+            "/ws/info",
+            "/api/chatbot/chat"
     );
 
     @Override
@@ -48,9 +68,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             String path = exchange.getRequest().getURI().getPath();
 
             // Bỏ qua kiểm tra JWT nếu endpoint nằm trong danh sách OPEN_ENDPOINTS
-            if (OPEN_ENDPOINTS.stream().anyMatch(path::startsWith)) {
-                System.out.println("Bỏ qua xác thực JWT cho endpoint: " + path);
-                return chain.filter(exchange);
+            for (String openEndpoint : OPEN_ENDPOINTS) {
+                if (path.contains(openEndpoint)) {
+                    System.out.println("Bỏ qua xác thực JWT cho endpoint: " + path);
+                    return chain.filter(exchange);
+                }
             }
 
             // Kiểm tra header Authorization

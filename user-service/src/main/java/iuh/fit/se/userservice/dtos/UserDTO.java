@@ -16,6 +16,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDTO {
+    private Long id;
     @NotEmpty(message = "Họ tên không được để trống")
     private String fullname;
     @NotEmpty(message = "Tên đăng nhập không được để trống")

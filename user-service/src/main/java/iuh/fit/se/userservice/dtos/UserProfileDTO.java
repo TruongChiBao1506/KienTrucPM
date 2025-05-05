@@ -15,6 +15,8 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserProfileDTO {
+    private Long id;
+    private Long userId;
     @NotEmpty(message = "tài khoản không được để trống")
     @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "Tài khoản không chứa ký tự đặc biệt")
     private String username;

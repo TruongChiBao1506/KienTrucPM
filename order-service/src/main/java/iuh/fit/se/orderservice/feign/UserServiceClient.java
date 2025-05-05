@@ -13,4 +13,6 @@ import java.util.Map;
 public interface UserServiceClient {
     @GetMapping("/user-profile/{id}")
     ResponseEntity<Map<String, Object>> getUserProfileById (@PathVariable Long id);
+    @GetMapping("/{username}")
+    ResponseEntity<Map<String, Object>> getUserInfo(@PathVariable String username);
 }

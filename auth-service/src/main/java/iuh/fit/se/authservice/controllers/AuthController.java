@@ -1,15 +1,21 @@
 package iuh.fit.se.authservice.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import iuh.fit.se.authservice.configs.JwtService;
 import iuh.fit.se.authservice.dtos.*;
 import iuh.fit.se.authservice.entities.RefreshToken;
 import iuh.fit.se.authservice.entities.Role;
 import iuh.fit.se.authservice.entities.User;
+import iuh.fit.se.authservice.events.dtos.UserProfileCreatedEvent;
+import iuh.fit.se.authservice.events.publishers.UserEventPublisher;
 import iuh.fit.se.authservice.services.AuthService;
 import iuh.fit.se.authservice.services.RefreshTokenService;
+import iuh.fit.se.authservice.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -35,6 +41,18 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserEventPublisher userEventPublisher;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+
     /**
      * Xử lý đăng ký người dùng
      */
@@ -52,7 +70,7 @@ public class AuthController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("status", HttpStatus.BAD_REQUEST.value());
-            response.put("errors", errors);
+            response.put("message", errors);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
@@ -64,7 +82,56 @@ public class AuthController {
 
         return ResponseEntity.status(status).body(response);
     }
+    @PostMapping("/verify-otp")
+    public ResponseEntity<Map<String, Object>> verifyOtp(@RequestBody OtpVerificationRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        String email = request.getEmail();
+        String otp = request.getOtp();
+        // 1. Kiểm tra OTP từ Redis
+        String storedOtp = redisTemplate.opsForValue().get("OTP:" + email);
+        if (storedOtp == null || !storedOtp.equals(otp)) {
+            response.put("status", HttpStatus.BAD_REQUEST.value());
+            response.put("message", "Invalid OTP");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        // 2. Lấy lại thông tin đăng ký
+        String userJson = redisTemplate.opsForValue().get("UNVERIFIED_USER:" + email);
+        if (userJson == null) {
+            response.put("status", HttpStatus.BAD_REQUEST.value());
+            response.put("message", "User not found");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        try {
+            RegisterRequest registerRequest = objectMapper.readValue(userJson, RegisterRequest.class);
+            // 3. Tạo tài khoản vào DB chính thức
+            User user = new User();
+            user.setUsername(registerRequest.getUsername());
+            user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+            user.setEmail(request.getEmail());
+            user.setRole(registerRequest.getRole() != null ? registerRequest.getRole() : Role.USER);
 
+            authService.save(user);
+            UserProfileCreatedEvent event = new UserProfileCreatedEvent(
+                    user.getId(), user.getUsername(), registerRequest.getFullname(), registerRequest.getDob() != null ? registerRequest.getDob() : new Date(),
+                    registerRequest.getPhone(), registerRequest.getAddress() != null ? registerRequest.getAddress() : "No address provided", registerRequest.isGender()
+            );
+            userEventPublisher.publishUserProfileCreated(event);
+
+            // 4. Xoá dữ liệu tạm
+            redisTemplate.delete("OTP:" + email);
+            redisTemplate.delete("UNVERIFIED_USER:" + email);
+            response.put("status", HttpStatus.OK.value());
+            response.put("message", "Đăng ký tài khoản thành công");
+            response.put("user", user);
+            return ResponseEntity.ok(response);
+        } catch (JsonProcessingException e) {
+            response.put("status", HttpStatus.BAD_REQUEST.value());
+            response.put("message", "Error parsing user data");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+
+    }
     /**
      * Xử lý đăng nhập người dùng
      */
@@ -82,14 +149,16 @@ public class AuthController {
                     .sameSite("Strict")
                     .build();
 
-            // Tạo body response (không trả refreshToken)
+            // Tạo body response
             Map<String, Object> response = new LinkedHashMap<>();
             response.put("status", HttpStatus.OK.value());
 
             Map<String, Object> data = new LinkedHashMap<>();
             data.put("accessToken", authResponse.getAccessToken());
+            data.put("refreshToken", authResponse.getRefreshToken());
             data.put("username", authResponse.getUsername());
             data.put("role", authResponse.getRole());
+            data.put("userId", authResponse.getUserId());
             response.put("data", data);
 
             return ResponseEntity
@@ -126,10 +195,27 @@ public class AuthController {
         return ResponseEntity.ok(authService.refresh(request.getRefreshToken()));
     }
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestBody RefreshRequest request) {
-        System.out.println(request.getRefreshToken());
-        authService.logout(request.getRefreshToken());
-        return ResponseEntity.ok("Logout successful");
+    public ResponseEntity<?> logout(@RequestBody String refreshToken) {
+        System.out.println("Đăng xuất với refreshToken: " + refreshToken);
+        if (refreshToken != null) {
+            authService.logout(refreshToken); // xóa khỏi DB
+        }
+
+        // Xóa cookie phía client
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false) // true nếu production
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(Map.of(
+                        "status", HttpStatus.OK.value(),
+                        "message", "Logout successful"
+                ));
     }
 
     @GetMapping("/all-by-role/{role}")
@@ -255,6 +341,46 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestBody Map<String, String> request){
+        Map<String, Object> response = new LinkedHashMap<String, Object>();
+        String email = request.get("email");
+
+        // Tạo JWT token
+        String token = jwtTokenUtil.generateResetToken(email);
+
+        // Gửi email
+        userEventPublisher.sendResetPasswordEmail(email, token);
+
+        response.put("status", HttpStatus.OK.value());
+        response.put("message", "Password reset link has been sent to your email.");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(@RequestBody Map<String, String> request){
+        Map<String, Object> response = new LinkedHashMap<String, Object>();
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+
+        // Xác thực token
+        if (!jwtTokenUtil.validateToken(token)) {
+            response.put("status", HttpStatus.BAD_REQUEST.value());
+            response.put("message", "Invalid or expired token.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        // Lấy email từ token
+        String email = jwtTokenUtil.getEmailFromToken(token);
+
+        // Cập nhật mật khẩu
+        authService.updatePassword(email, newPassword);
+
+        response.put("status", HttpStatus.OK.value());
+        response.put("message", "Password reset successfully.");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
     @PostMapping("/change-password")
     public ResponseEntity<Map<String, Object>> changePassword(@RequestBody AuthUserChangePassword authUserChangePassword){
         Map<String, Object> response = new LinkedHashMap<>();

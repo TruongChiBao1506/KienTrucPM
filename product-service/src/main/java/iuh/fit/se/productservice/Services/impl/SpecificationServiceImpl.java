@@ -5,6 +5,7 @@ import java.util.List;
 import iuh.fit.se.productservice.Repositories.SpecificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import iuh.fit.se.productservice.entities.Specifications;
 import iuh.fit.se.productservice.Services.SpecificationService;
@@ -27,6 +28,7 @@ public class SpecificationServiceImpl implements SpecificationService{
 	}
 
 	@Override
+	@Transactional
 	public Specifications save(Specifications specifications) {
 		return specificationRepository.save(specifications);
 	}

@@ -18,6 +18,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,15 +38,15 @@ public class UserIndexServiceImpl implements UserIndexService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final ElasticsearchOperations elasticsearchOperations;
+//    @Autowired
+//    private ElasticsearchOperations elasticsearchOperations;
+
     @Autowired
     private ElasticsearchClient elasticsearchClient;
 
-    public UserIndexServiceImpl(ElasticsearchOperations elasticsearchOperations) {
-        this.elasticsearchOperations = elasticsearchOperations;
-    }
 
     @Override
+    @Transactional
     public void syncUsersToElasticsearch() {
         userElasticsearchRepository.deleteAll();
         List<User> users = userRepository.findAll();
@@ -75,6 +76,7 @@ public class UserIndexServiceImpl implements UserIndexService {
     }
 
     @Override
+    @Transactional
     public void addUserToElasticsearch(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
@@ -101,6 +103,7 @@ public class UserIndexServiceImpl implements UserIndexService {
         userElasticsearchRepository.save(userIndex);
     }
     @Override
+    @Transactional
     public void deleteUserByUserId(Long userId){
         try {
             // 🔥 Tạo truy vấn BoolQuery

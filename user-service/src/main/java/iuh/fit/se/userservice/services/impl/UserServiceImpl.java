@@ -6,24 +6,36 @@ import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.TermQuery;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import iuh.fit.se.userservice.dtos.UserDTO;
 import iuh.fit.se.userservice.entities.User;
 import iuh.fit.se.userservice.feign.AuthServiceClient;
 import iuh.fit.se.userservice.index.UserIndex;
 import iuh.fit.se.userservice.repositories.UserRepository;
 import iuh.fit.se.userservice.services.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
     @Autowired
     private UserRepository userRepository;
 
@@ -45,27 +57,55 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User save(User user) {
         return userRepository.save(user);
     }
 
     @Override
-    public List<User> findAll() {
-        return this.userRepository.findAll();
+    public List<UserDTO> findAll() {
+
+        List<User> userList = userRepository.findAll();
+        List<UserDTO> userDTOS = new ArrayList<>();
+
+        for (User user : userList) {
+            UserDTO userDTO = new UserDTO();
+
+            // Lấy email từ auth service
+            ResponseEntity<Map<String, Object>> responseEmail = authServiceClient.getAuthUserEmailById(user.getUserId());
+            String email = responseEmail.getBody().get("data").toString();
+
+            // Lấy vai trò
+            String roleUser = authServiceClient.getRoleByUserId(user.getUserId());
+
+            // Gán dữ liệu vào DTO
+            userDTO.setEmail(email);
+            userDTO.setId(user.getId());
+            userDTO.setFullname(user.getFullname());
+            userDTO.setUsername(user.getUsername());
+            userDTO.setPhone(user.getPhone());
+            userDTO.setAddress(user.getAddress());
+            userDTO.setGender(user.isGender());
+            userDTO.setDob(user.getDob());
+            userDTO.setRole(roleUser);
+
+            userDTOS.add(userDTO);
+        }
+
+        return userDTOS;
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         if (!userRepository.existsById(id)) {
             throw new RuntimeException("Không tìm thấy người dùng với ID: " + id);
         }
-//        if (userRepository.findById(id).get().getOrders().size() > 0) {
-//            throw new RuntimeException("Không thể xóa người dùng đã đặt hàng");
-//        }
         userRepository.deleteById(id);
     }
 
     @Override
+    @Transactional
     public User updateUser(User user) {
         User userInDB = userRepository.findById(user.getId()).orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -73,12 +113,10 @@ public class UserServiceImpl implements UserService {
             return null;
         } else {
             userInDB.setFullname(user.getFullname());
-//            userInDB.setEmail(user.getEmail());
             userInDB.setPhone(user.getPhone());
             userInDB.setAddress(user.getAddress());
             userInDB.setGender(user.isGender());
             userInDB.setDob(user.getDob());
-//            userInDB.setRole(user.getRole());
             userInDB.setUsername(user.getUsername());
             userRepository.save(userInDB);
             return userInDB;
@@ -86,25 +124,73 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> filterUsers(String keyword, String gender, String role) {
+    @CircuitBreaker(name = "userService", fallbackMethod = "filterUsersFallback")
+    public List<UserDTO> filterUsers(String keyword, String gender, String role) {
         Specification<User> spec = Specification.where(null);
         // Thêm điều kiện tìm kiếm theo từ khóa
         if (keyword != null && !keyword.isEmpty()) {
-            System.out.println(keyword);
+            logger.debug("Filtering by keyword: {}", keyword);
             spec = spec.and(containsKeyword(keyword));
         }
         // Thêm điều kiện lọc theo giới tính
         if (gender != null && !gender.isEmpty()) {
-            System.out.println(gender);
+            logger.debug("Filtering by gender: {}", gender);
             spec = spec.and(hasGender(gender.equals("Male")));
         }
         if (role != null && !role.isEmpty()) {
+            logger.debug("Filtering by role: {}", role);
             List<Long> userIds = authServiceClient.getUserIdsByRole(role);
-            if(userIds.size() > 0) {
+            if (userIds.size() > 0) {
                 spec = spec.and(hasUserIdIn(userIds));
             }
         }
-        return userRepository.findAll(spec);
+
+        List<User> userList =  userRepository.findAll(spec);
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (User user : userList) {
+            UserDTO userDTO = new UserDTO();
+            ResponseEntity<Map<String, Object>> responseEmail = authServiceClient.getAuthUserEmailById(user.getUserId());
+            String email = responseEmail.getBody().get("data").toString();
+            System.out.println("Email: " + email);
+            userDTO.setEmail(email);
+            userDTO.setId(user.getId());
+            userDTO.setFullname(user.getFullname());
+            userDTO.setUsername(user.getUsername());
+            userDTO.setPhone(user.getPhone());
+            userDTO.setAddress(user.getAddress());
+            userDTO.setGender(user.isGender());
+
+            userDTO.setDob(user.getDob());
+            String roleUser = authServiceClient.getRoleByUserId(user.getUserId());
+            userDTO.setRole(roleUser);
+            userDTOS.add(userDTO);
+        }
+        return userDTOS;
+    }
+
+    // Fallback method for filterUsers
+    public List<User> filterUsersFallback(String keyword, String gender, String role, Throwable t) {
+        logger.error("Circuit breaker triggered for filterUsers. Error: {}", t.getMessage(), t);
+
+        // Nếu lỗi trong việc lấy role từ auth-service, vẫn có thể lọc theo keyword và gender
+        Specification<User> spec = Specification.where(null);
+
+        if (keyword != null && !keyword.isEmpty()) {
+            spec = spec.and(containsKeyword(keyword));
+        }
+
+        if (gender != null && !gender.isEmpty()) {
+            spec = spec.and(hasGender(gender.equals("Male")));
+        }
+
+        // Trả về dữ liệu chỉ lọc theo các điều kiện cục bộ
+        try {
+            logger.info("Applying fallback strategy: filtering locally by keyword and gender");
+            return userRepository.findAll(spec);
+        } catch (Exception ex) {
+            logger.error("Error in fallback method: {}", ex.getMessage(), ex);
+            return new ArrayList<>(); // Trả về danh sách rỗng nếu cả fallback cũng thất bại
+        }
     }
 
     @Override
@@ -113,15 +199,42 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> findAllByIds(List<Long> ids) {
-        return userRepository.findAllById(ids);
+    public List<UserDTO> findAllByIds(List<Long> ids) {
+
+        List<User> userList = userRepository.findAllById(ids);
+        List<UserDTO> userDTOS = new ArrayList<>();
+
+        for (User user : userList) {
+            UserDTO userDTO = new UserDTO();
+
+            // Lấy email từ auth service
+            ResponseEntity<Map<String, Object>> responseEmail = authServiceClient.getAuthUserEmailById(user.getUserId());
+            String email = responseEmail.getBody().get("data").toString();
+
+            // Lấy vai trò
+            String roleUser = authServiceClient.getRoleByUserId(user.getUserId());
+
+            // Gán dữ liệu vào DTO
+            userDTO.setEmail(email);
+            userDTO.setId(user.getId());
+            userDTO.setFullname(user.getFullname());
+            userDTO.setUsername(user.getUsername());
+            userDTO.setPhone(user.getPhone());
+            userDTO.setAddress(user.getAddress());
+            userDTO.setGender(user.isGender());
+            userDTO.setDob(user.getDob());
+            userDTO.setRole(roleUser);
+
+            userDTOS.add(userDTO);
+        }
+
+        return userDTOS;
     }
 
     @Override
+    @CircuitBreaker(name = "userService", fallbackMethod = "searchUsersFallback")
     public List<UserIndex> searchUsers(String keyword, String gender, String role) throws IOException {
-        System.out.println(keyword);
-        System.out.println(gender);
-        System.out.println(role);
+        logger.debug("Searching users - keyword: {}, gender: {}, role: {}", keyword, gender, role);
         BoolQuery.Builder boolQuery = new BoolQuery.Builder();
 
         // Tìm kiếm theo keyword (fullname, email, phone, username, address)
@@ -155,13 +268,57 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
+    // Fallback method for searchUsers
+    public List<UserIndex> searchUsersFallback(String keyword, String gender, String role, Throwable t) {
+        logger.error("Circuit breaker triggered for searchUsers. Error: {}", t.getMessage(), t);
+
+        try {
+            logger.info("Applying fallback strategy: converting database results to UserIndex");
+
+            // Thay vì trả về danh sách rỗng, thử lấy dữ liệu từ database và chuyển đổi thành UserIndex
+            Specification<User> spec = Specification.where(null);
+
+            if (keyword != null && !keyword.isEmpty()) {
+                spec = spec.and(containsKeyword(keyword));
+            }
+
+            if (gender != null && !gender.isEmpty()) {
+                spec = spec.and(hasGender(gender.equals("Male")));
+            }
+
+            // Lấy danh sách user từ database
+            List<User> users = userRepository.findAll(spec);
+
+            // Chuyển đổi List<User> sang List<UserIndex>
+            return users.stream()
+                    .map(user -> {
+                        UserIndex userIndex = new UserIndex();
+                        userIndex.setUserId(user.getId());
+                        userIndex.setFullname(user.getFullname());
+                        userIndex.setUsername(user.getUsername());
+                        userIndex.setPhone(user.getPhone());
+                        userIndex.setAddress(user.getAddress());
+                        userIndex.setGender(user.isGender());
+                        // Role không có sẵn trong User entity, có thể để trống hoặc mặc định
+                        return userIndex;
+                    })
+                    .collect(Collectors.toList());
+
+        } catch (Exception ex) {
+            logger.error("Error in fallback method: {}", ex.getMessage(), ex);
+            return new ArrayList<>(); // Trả về danh sách rỗng chỉ khi fallback cũng thất bại
+        }
+    }
+
     public static Specification<User> hasGender(Boolean gender) {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("gender"), gender);
     }
+
     public static Specification<User> hasUserIdIn(List<Long> userIds) {
         return (root, query, criteriaBuilder) -> root.get("id").in(userIds);
     }
+
     public static Specification<User> containsKeyword(String keyword) {
         return (root, query, criteriaBuilder) -> {
             String likePattern = "%" + keyword.toLowerCase() + "%";

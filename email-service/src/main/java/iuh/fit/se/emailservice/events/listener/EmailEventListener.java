@@ -2,10 +2,12 @@ package iuh.fit.se.emailservice.events.listener;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import iuh.fit.se.emailservice.dtos.OtpEmailEvent;
 import iuh.fit.se.emailservice.entities.Order;
 import iuh.fit.se.emailservice.entities.User;
 import iuh.fit.se.emailservice.feign.UserServiceClient;
 import iuh.fit.se.emailservice.utils.EmailTemplateUtil;
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,6 +45,21 @@ public class EmailEventListener {
                     handleEmailCreated(order, email, productTableConvert);
                     System.out.println("created email successfully");
                     break;
+                case "SendOtpEmail":
+                    // Handle SendOtpEmail event
+                    OtpEmailEvent otpEmailEvent = objectMapper.treeToValue(jsonNode.get("data"), OtpEmailEvent.class);
+                    String otpEmail = otpEmailEvent.getEmail();
+                    String otp = otpEmailEvent.getOtp();
+                    handleSendOTPEmail(otpEmail, otp);
+                    System.out.println("Sent OTP email to: " + otpEmail);
+                    break;
+                case "SendResetPasswordEmail":
+                    // Handle SendResetPasswordEmail event
+                    String emailReset = jsonNode.get("email").asText();
+                    String token = jsonNode.get("token").asText();
+                    handleSendResetPasswordEmail(emailReset, token);
+                    System.out.println("Sent reset password email to: " + emailReset);
+                    break;
                 default:
                     System.out.println("Unknown event type: " + eventType);
             }
@@ -51,6 +68,23 @@ public class EmailEventListener {
             e.printStackTrace();
         }
     }
+
+    public void handleSendOTPEmail(String email, String otp){
+        String subject = "OTP Email";
+        String htmlContent = EmailTemplateUtil.buildOtpEmailContent(otp);
+        MimeMessage messageMail = javaMailSender.createMimeMessage();
+        try{
+            MimeMessageHelper helper = new MimeMessageHelper(messageMail, true);
+            helper.setFrom("sendingemaileventhub@gmail.com");
+            helper.setTo(email);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            javaMailSender.send(messageMail);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     private void handleEmailCreated(Order order, String email, StringBuilder productTable) {
         ResponseEntity<Map<String, Object>> response = userServiceClient.getUserById(order.getUserId());
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -75,6 +109,31 @@ public class EmailEventListener {
         } else {
             System.out.println("Failed to fetch user data");
 
+        }
+    }
+    public void handleSendResetPasswordEmail(String email, String token){
+        String resetUrl = "http://localhost:8889/reset-password?token=" + token;
+        String subject = "Reset Your Password";
+//        String message = "Click the link below to reset your password:\n" + resetUrl;
+        // HTML Template for Email
+        String htmlContent = "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;\">"
+                + "<h2 style=\"color: #333;\">Password Reset Request</h2>"
+                + "<p>We received a request to reset your password. Click the link below to reset your password:</p>"
+                + "<a href=\"" + resetUrl
+                + "\" style=\"display: inline-block; padding: 10px 20px; margin: 20px 0; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;\">Reset Password</a>"
+                + "<p>If you did not request a password reset, please ignore this email or contact support if you have questions.</p>"
+                + "<p>Thank you,<br>Your Company Team</p>" + "</div>";
+
+        MimeMessage messageMail = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(messageMail, true);
+            helper.setFrom("sendingemaileventhub@gmail.com");
+            helper.setTo(email);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            javaMailSender.send(messageMail);
+        } catch (MessagingException e) {
+            e.printStackTrace();
         }
     }
 }

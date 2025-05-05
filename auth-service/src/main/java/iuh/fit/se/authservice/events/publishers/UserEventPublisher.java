@@ -2,6 +2,7 @@ package iuh.fit.se.authservice.events.publishers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import iuh.fit.se.authservice.dtos.OtpEmailEvent;
 import iuh.fit.se.authservice.events.dtos.UserEmailUpdateEvent;
 import iuh.fit.se.authservice.events.dtos.UserProfileCreatedEvent;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -41,6 +42,35 @@ public class UserEventPublisher {
             System.out.println("Sending JSON to Kafka: " + json);
 
             kafkaTemplate.send("user.topic", json);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    public void publishSendOtpEamil(OtpEmailEvent event){
+        try {
+            ObjectNode jsonNode = objectMapper.createObjectNode();
+            jsonNode.put("eventType", "SendOtpEmail");
+            jsonNode.set("data", objectMapper.valueToTree(event));
+            String json = objectMapper.writeValueAsString(jsonNode);
+            System.out.println("Sending JSON to Kafka: " + json);
+
+            kafkaTemplate.send("email.topic", json);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    public void sendResetPasswordEmail(String email, String token){
+        try {
+            ObjectNode jsonNode = objectMapper.createObjectNode();
+            jsonNode.put("eventType", "SendResetPasswordEmail");
+            jsonNode.set("email", objectMapper.valueToTree(email));
+            jsonNode.set("token", objectMapper.valueToTree(token));
+            String json = objectMapper.writeValueAsString(jsonNode);
+            System.out.println("Sending JSON to Kafka: " + json);
+
+            kafkaTemplate.send("email.topic", json);
         }
         catch (Exception e){
             e.printStackTrace();

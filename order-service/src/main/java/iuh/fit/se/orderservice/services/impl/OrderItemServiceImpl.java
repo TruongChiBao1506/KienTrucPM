@@ -9,6 +9,7 @@ import iuh.fit.se.orderservice.services.OrderItemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ public class OrderItemServiceImpl implements OrderItemService {
     }
 
     @Override
+    @Transactional
     public OrderItem save(OrderItem orderItem) {
         return orderItemRepository.save(orderItem);
     }

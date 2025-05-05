@@ -6,6 +6,7 @@ import iuh.fit.se.productservice.dtos.GlassStatistic;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import iuh.fit.se.productservice.entities.Glass;
@@ -31,8 +32,14 @@ public interface GlassRepository extends JpaRepository<Glass, Long>, JpaSpecific
     @Query("SELECT DISTINCT g.colorName FROM Glass g")
     List<String> getAllColor();
 
-    @Query("SELECT g FROM Glass g WHERE LOWER(g.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(g.brand) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-    List<Glass> searchGlasses(String keyword);
+    @Query("select g from Glass g where g.name like %:keyword% "
+            + "or g.brand like %:keyword% "
+            + "or g.colorName like %:keyword% "
+            + "or g.colorCode like %:keyword% "
+            + "or g.description like %:keyword% "
+            + "or g.specifications.shape like %:keyword% "
+            + "or g.specifications.material like %:keyword%")
+    List<Glass> searchGlasses(@Param("keyword") String keyword);
 
 //    @Query(value = "SELECT new iuh.fit.se.productservice.dtos.GlassStatistic(g.id, g.name, g.imageSideUrl, g.price, COUNT(oi.orderItemId.productId) as totalSold) " +
 //            "FROM Glass g JOIN OrderItem oi ON g.id = oi.orderItemId.productId " +
