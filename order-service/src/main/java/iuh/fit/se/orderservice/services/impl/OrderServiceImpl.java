@@ -252,9 +252,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
     public boolean deleteById(Long id) {
-        if(this.findById(id)!= null) {
+        Order order = orderRepository.findById(id).orElse(null);
+        if(order != null && order.getStatus().equals("FAILED")) {
             orderRepository.deleteById(id);
             return true;
         }

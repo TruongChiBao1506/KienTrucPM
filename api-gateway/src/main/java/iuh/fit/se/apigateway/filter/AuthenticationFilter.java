@@ -58,7 +58,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             "/ws/",
             "/ws",
             "/ws/info",
-            "/api/chatbot/chat"
+            "/api/chatbot/chat",
+            "/api/reviews/getReviews"
     );
 
     @Override
@@ -69,7 +70,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             // Bỏ qua kiểm tra JWT nếu endpoint nằm trong danh sách OPEN_ENDPOINTS
             for (String openEndpoint : OPEN_ENDPOINTS) {
-                if (path.contains(openEndpoint)) {
+                if (path.contains(openEndpoint) || path.startsWith(openEndpoint)) {
                     System.out.println("Bỏ qua xác thực JWT cho endpoint: " + path);
                     return chain.filter(exchange);
                 }

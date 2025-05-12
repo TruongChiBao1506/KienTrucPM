@@ -5,113 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="08d585e9-b2f1-401f-97c9-d2fb074d8867" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/dtos/OtpEmailEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/dtos/OtpVerificationRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/OtpService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/impl/OtpServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/utils/JwtTokenUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/utils/OtpGenerator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/.gitattributes" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/mvnw" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/mvnw.cmd" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/CartServiceApplication.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/configs/RedisConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/configs/SecurityConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/controllers/CartController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/entities/Cart.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/service/CartService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/iuh/fit/se/cartservice/service/impl/CartServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/resources/application.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/test/java/iuh/fit/se/cartservice/CartServiceApplicationTests.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/.gitattributes" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/mvnw" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/mvnw.cmd" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/ChatbotServiceApplication.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/client/ProductServiceClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/config/JacksonConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/controller/ChatbotController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/dto/ChatRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/dto/ChatResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/dto/GlassDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/dto/NavigationSuggestion.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/dto/ProductSuggestion.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/model/Conversation.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/model/Message.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/repository/ConversationRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ChatbotPromptService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ChatbotService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ConversationService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/GeminiService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/NavigationService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductDataService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductIntentAnalyzer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/RateLimitService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/resources/application.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chatbot-service/src/test/java/iuh/fit/se/chatbotservice/ChatbotServiceApplicationTests.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/email-service/src/main/java/iuh/fit/se/emailservice/dtos/OtpEmailEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/logs/user-service.log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/configs/WebSocketConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/dtos/OrderDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/dtos/OrderItemUserDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/dtos/OrderStatisticListDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/dtos/UserDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/controllers/CategoryController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/dtos/UserUpdateDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/KienTrucPM.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/iuh/fit/se/apigateway/configs/CorsConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/iuh/fit/se/apigateway/configs/CorsConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/iuh/fit/se/apigateway/filter/AuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/iuh/fit/se/apigateway/filter/AuthenticationFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/controllers/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/controllers/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/dtos/AuthResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/dtos/AuthResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/events/publishers/UserEventPublisher.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/events/publishers/UserEventPublisher.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/AuthService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/impl/AuthServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/java/iuh/fit/se/authservice/services/impl/AuthServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/auth-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/email-service/src/main/java/iuh/fit/se/emailservice/events/listener/EmailEventListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/email-service/src/main/java/iuh/fit/se/emailservice/events/listener/EmailEventListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/email-service/src/main/java/iuh/fit/se/emailservice/utils/EmailTemplateUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/email-service/src/main/java/iuh/fit/se/emailservice/utils/EmailTemplateUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notification-service/src/main/java/iuh/fit/se/notificationservice/controllers/notificationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/notification-service/src/main/java/iuh/fit/se/notificationservice/controllers/notificationController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notification-service/src/main/java/iuh/fit/se/notificationservice/services/impl/NotificationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/notification-service/src/main/java/iuh/fit/se/notificationservice/services/impl/NotificationServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/configs/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/configs/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/GeminiService.java" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/GeminiService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductDataService.java" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductDataService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductIntentAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductIntentAnalyzer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot-service/src/main/resources/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/controllers/OrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/controllers/OrderController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/feign/UserServiceClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/feign/UserServiceClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/OrderService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/OrderItemServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/OrderItemServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/entities/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/entities/Order.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/entities/OrderItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/entities/OrderItem.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/OrderServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/OrderServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/VNPayServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/VNPayServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Repositories/GlassRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Repositories/GlassRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/FrameSizeServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/FrameSizeServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/GlassServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/GlassServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/SpecificationServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/SpecificationServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/configs/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/configs/SecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/controllers/GlassController.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/controllers/GlassController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/dtos/GlassesDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/dtos/GlassesDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/review-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/review-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/service/impl/ReviewServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/service/impl/ReviewServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/configs/FeignConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/configs/FeignConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/controllers/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/controllers/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/dtos/UserDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/dtos/UserDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/dtos/UserProfileDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/dtos/UserProfileDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/feign/AuthServiceClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/feign/AuthServiceClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/impl/UserIndexServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/impl/UserIndexServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/impl/UserServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/configs/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/configs/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/controllers/ReviewController.java" beforeDir="false" afterPath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/controllers/ReviewController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/review-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/review-service/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -171,7 +79,7 @@
     &quot;Spring Boot.ProductServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.ReviewServiceApplication.executor&quot;: &quot;Run&quot;,
     &quot;Spring Boot.UserServiceApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;notification-email&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;chatbot-service&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -283,8 +191,6 @@
     </configuration>
     <list>
       <item itemvalue="Spring Boot.ApiGatewayApplication" />
-      <item itemvalue="Spring Boot.ProductServiceApplication" />
-      <item itemvalue="Spring Boot.ReviewServiceApplication" />
       <item itemvalue="Spring Boot.AuthServiceApplication" />
       <item itemvalue="Spring Boot.CartServiceApplication" />
       <item itemvalue="Spring Boot.ChatbotServiceApplication" />
@@ -292,6 +198,8 @@
       <item itemvalue="Spring Boot.EurekaServerApplication" />
       <item itemvalue="Spring Boot.NotificationServiceApplication" />
       <item itemvalue="Spring Boot.OrderServiceApplication" />
+      <item itemvalue="Spring Boot.ProductServiceApplication" />
+      <item itemvalue="Spring Boot.ReviewServiceApplication" />
       <item itemvalue="Spring Boot.UserServiceApplication" />
     </list>
   </component>
@@ -327,6 +235,13 @@
       <workItem from="1746366889161" duration="1234000" />
       <workItem from="1746375081014" duration="4783000" />
       <workItem from="1746430471447" duration="7600000" />
+      <workItem from="1746443716646" duration="39000" />
+      <workItem from="1746462539248" duration="7496000" />
+      <workItem from="1746513789735" duration="10861000" />
+      <workItem from="1746548301775" duration="4908000" />
+      <workItem from="1746630390552" duration="9382000" />
+      <workItem from="1747036308172" duration="4356000" />
+      <workItem from="1747068789681" duration="1120000" />
     </task>
     <servers />
   </component>

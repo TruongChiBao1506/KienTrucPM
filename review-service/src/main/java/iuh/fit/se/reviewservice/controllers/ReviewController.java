@@ -27,6 +27,7 @@ public class ReviewController {
 
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> createReview(@RequestBody ReviewRequest reviewRequest) {
+        System.out.println("Received review request: " + reviewRequest);
         var createdReview = reviewService.createReview(reviewRequest);
 
         Map<String, Object> response = new LinkedHashMap<>();
@@ -37,9 +38,9 @@ public class ReviewController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/{productId}")
+    @GetMapping("/getReviews")
     public ResponseEntity<Map<String, Object>> getReviewByProduct(
-            @PathVariable Long productId,
+            @RequestParam Long productId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
 

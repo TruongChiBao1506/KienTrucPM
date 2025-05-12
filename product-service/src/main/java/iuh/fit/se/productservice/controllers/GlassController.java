@@ -46,6 +46,7 @@ public class GlassController {
 		response.put("data", glassService.findAll());
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+	
 	@GetMapping("/glasses/{id}")
 	public ResponseEntity<Map<String, Object>> getById(@PathVariable Long id){
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -53,6 +54,7 @@ public class GlassController {
 		response.put("data", glassService.findById(id));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+	
 	@GetMapping("/glasses-review/{id}")
 	public ResponseEntity<Map<String, Object>> getGlassesReviewById(@PathVariable Long id){
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -74,6 +76,7 @@ public class GlassController {
 		}
 
 	}
+	
 	@GetMapping("/eyeglasses")
 	public ResponseEntity<Map<String, Object>> getByCategoryEyeGlass() {
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -81,6 +84,7 @@ public class GlassController {
 		response.put("data", glassService.findByCategory(2L));
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 	}
+	
 	@GetMapping("/sunglasses")
 	public ResponseEntity<Map<String, Object>> getByCategorySunGlass() {
 		Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -353,5 +357,5 @@ public class GlassController {
 			glassesToOrderItemDTO.setColor_name(glass.getColorName());
 			glassesToOrderItemDTO.setColor_code(glass.getColorCode());
 			return glassesToOrderItemDTO;
-		}
+			}
 }

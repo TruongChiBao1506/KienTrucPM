@@ -26,6 +26,9 @@ public class ProductIntentAnalyzer {
         private Double minPrice;
         private Double maxPrice;
         private String searchKeyword;
+        private boolean wantsMostExpensive = false;  // Muốn tìm kính đắt nhất
+        private boolean wantsCheapest = false;       // Muốn tìm kính rẻ nhất
+        private boolean wantsBoth = false;           // Muốn tìm cả kính mắt và kính râm
     }
 
     public ProductIntent analyzeIntent(String message) {
@@ -39,6 +42,21 @@ public class ProductIntentAnalyzer {
 
         if (containsAnyOf(message, "kính râm", "kính mát", "sunglasses", "chống nắng", "chống tia uv")) {
             intent.setWantsSunglasses(true);
+        }
+
+        if (intent.isWantsEyeglasses() && intent.isWantsSunglasses()) {
+            intent.setWantsBoth(true);
+        }
+
+        // Detect most expensive/cheapest intent - cải thiện phát hiện "mắc nhất"
+        if (containsAnyOf(message, "đắt nhất", "mắc nhất", "cao nhất", "giá cao nhất", "giá đắt nhất", "most expensive", "highest price", "luxury", "đắt tiền nhất", "giá cao")) {
+            intent.setWantsMostExpensive(true);
+            log.info("Phát hiện người dùng muốn tìm kính đắt nhất: '{}'", message);
+        }
+
+        if (containsAnyOf(message, "rẻ nhất", "giá rẻ nhất", "thấp nhất", "giá thấp nhất", "giá mềm nhất", "cheapest", "lowest price", "best price")) {
+            intent.setWantsCheapest(true);
+            log.info("Phát hiện người dùng muốn tìm kính rẻ nhất");
         }
 
         // Detect gender
@@ -127,7 +145,8 @@ public class ProductIntentAnalyzer {
                 !intent.isForMen() && !intent.isForWomen() &&
                 intent.getBrand() == null && intent.getShape() == null &&
                 intent.getMaterial() == null && intent.getColor() == null &&
-                intent.getMinPrice() == null && intent.getMaxPrice() == null) {
+                intent.getMinPrice() == null && intent.getMaxPrice() == null &&
+                !intent.isWantsMostExpensive() && !intent.isWantsCheapest()) {
 
             intent.setSearchKeyword(message);
         }

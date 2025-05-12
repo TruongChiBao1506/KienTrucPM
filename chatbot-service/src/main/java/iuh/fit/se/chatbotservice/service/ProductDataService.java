@@ -22,6 +22,9 @@ public class ProductDataService {
 
     private final ProductServiceClient productServiceClient;
     private final ObjectMapper objectMapper;
+    
+    @Value("${frontend.base-url}")
+    private String frontendBaseUrl;
 
     // Cache data
     private List<GlassDTO> allProducts = new ArrayList<>();
@@ -86,10 +89,21 @@ public class ProductDataService {
     private GlassDTO mapToGlassDTO(Map<String, Object> map) {
         try {
             GlassDTO dto = new GlassDTO();
-            dto.setId(Long.valueOf(map.get("id").toString()));
+            
+            // Kiểm tra null trước khi gọi toString()
+            Object idObj = map.get("id");
+            if (idObj != null) {
+                dto.setId(Long.valueOf(idObj.toString()));
+            }
+            
             dto.setName((String) map.get("name"));
             dto.setBrand((String) map.get("brand"));
-            dto.setPrice(Double.valueOf(map.get("price").toString()));
+            
+            Object priceObj = map.get("price");
+            if (priceObj != null) {
+                dto.setPrice(Double.valueOf(priceObj.toString()));
+            }
+            
             dto.setColorName((String) map.get("colorName"));
             dto.setColorCode((String) map.get("colorCode"));
             
@@ -103,15 +117,44 @@ public class ProductDataService {
             }
             
             dto.setImageSideUrl((String) map.get("imageSideUrl"));
-            dto.setGender(Boolean.parseBoolean(map.get("gender").toString()));
-            dto.setStock(Integer.parseInt(map.get("stock").toString()));
+            
+            Object genderObj = map.get("gender");
+            if (genderObj != null) {
+                dto.setGender(Boolean.parseBoolean(genderObj.toString()));
+            }
+            
+            Object stockObj = map.get("stock");
+            if (stockObj != null) {
+                dto.setStock(Integer.parseInt(stockObj.toString()));
+            }
+            
             dto.setDescription((String) map.get("description"));
 
-            // Extract specifications
+            // Extract specifications - Cải thiện cách trích xuất chất liệu
             Map<String, Object> specifications = (Map<String, Object>) map.get("specifications");
             if (specifications != null) {
-                dto.setShape((String) specifications.get("shape"));
-                dto.setMaterial((String) specifications.get("material"));
+                String shape = (String) specifications.get("shape");
+                String material = (String) specifications.get("material");
+                
+                dto.setShape(shape);
+                dto.setMaterial(material);
+                
+                // Log thông tin chất liệu để debug
+                if (material != null && 
+                    (material.toLowerCase().contains("carbon fiber") || 
+                     material.toLowerCase().contains("stainless steel") ||
+                     material.toLowerCase().contains("mixed"))) {
+                    log.info("Đã trích xuất sản phẩm có chất liệu đặc biệt - ID: {}, Tên: {}, Chất liệu: {}",
+                            dto.getId(), dto.getName(), material);
+                }
+            } else {
+                // Thử trích xuất từ nơi khác nếu specifications là null
+                Object materialObj = map.get("material");
+                if (materialObj != null) {
+                    String material = materialObj.toString();
+                    dto.setMaterial(material);
+                    log.info("Trích xuất chất liệu từ trường material trực tiếp: {}", material);
+                }
             }
 
             // Extract frame size
@@ -127,7 +170,10 @@ public class ProductDataService {
             // Extract category
             Map<String, Object> category = (Map<String, Object>) map.get("category");
             if (category != null) {
-                dto.setCategoryId(Long.valueOf(category.get("id").toString()));
+                Object categoryIdObj = category.get("id");
+                if (categoryIdObj != null) {
+                    dto.setCategoryId(Long.valueOf(categoryIdObj.toString()));
+                }
                 dto.setCategoryName((String) category.get("name"));
             }
 
@@ -156,13 +202,13 @@ public class ProductDataService {
 
     public List<GlassDTO> getEyeglasses() {
         return getAllProducts().stream()
-                .filter(glass -> glass.getCategoryId() != null && glass.getCategoryId() == 1L)
+                .filter(glass -> glass.getCategoryId() != null && glass.getCategoryId() == 2L)
                 .collect(Collectors.toList());
     }
 
     public List<GlassDTO> getSunglasses() {
         return getAllProducts().stream()
-                .filter(glass -> glass.getCategoryId() != null && glass.getCategoryId() == 2L)
+                .filter(glass -> glass.getCategoryId() != null && glass.getCategoryId() == 1L)
                 .collect(Collectors.toList());
     }
 
@@ -241,7 +287,8 @@ public class ProductDataService {
 
         // Process categories
         for (Map.Entry<Long, List<GlassDTO>> entry : productsByCategory.entrySet()) {
-            String categoryName = entry.getKey() == 1L ? "Kính cận (Eyeglasses)" : "Kính râm (Sunglasses)";
+            // Sửa lại phân loại: ID 1 là kính râm (Sunglasses), ID 2 là kính cận (Eyeglasses)
+            String categoryName = entry.getKey() == 1L ? "Kính râm (Sunglasses)" : "Kính cận (Eyeglasses)";
             sb.append("Danh mục: ").append(categoryName).append("\n");
 
             // Group by brand for cleaner presentation
@@ -305,44 +352,119 @@ public class ProductDataService {
     }
 
     public ProductSuggestion[] convertToProductSuggestions(List<GlassDTO> products) {
+        // Kiểm tra kết quả rỗng
         if (products == null || products.isEmpty()) {
             return new ProductSuggestion[0];
         }
         
-        // Debug: In ra thông tin hình ảnh của tất cả sản phẩm để kiểm tra
-        for (GlassDTO product : products) {
-            log.info("Debug - Product: ID={}, Name={}, Color={}, ImageFrontUrl={}",
-                    product.getId(), product.getName(), product.getColorName(), product.getImageFrontUrl());
+        log.info("Bắt đầu chuyển đổi {} sản phẩm thành gợi ý", products.size());
+        
+        // Tìm kính có giá cao nhất
+        GlassDTO mostExpensiveProduct = products.stream()
+            .max(Comparator.comparing(GlassDTO::getPrice))
+            .orElse(null);
+            
+        if (mostExpensiveProduct != null) {
+            log.info("Sản phẩm có giá cao nhất trong danh sách: {} - {}", 
+                     mostExpensiveProduct.getName(), mostExpensiveProduct.getPrice());
+        }
+        
+        // Always return just the most expensive product for now
+        // This is a temporary fix until we can diagnose the issue more thoroughly
+        if (products.size() > 1 && mostExpensiveProduct != null) {
+            log.warn("Phát hiện nhiều sản phẩm trong kết quả tìm kiếm kính mắc nhất. " +
+                    "Chủ động chỉ giữ lại sản phẩm có giá cao nhất: {} - {}", 
+                    mostExpensiveProduct.getName(), mostExpensiveProduct.getPrice());
+            
+            List<GlassDTO> singleProduct = Collections.singletonList(mostExpensiveProduct);
+            
+            return singleProduct.stream()
+                .map(this::createProductSuggestion)
+                .toArray(ProductSuggestion[]::new);
         }
 
-        return products.stream()
-                .map(product -> {
-                    String imageUrl = product.getImageFrontUrl();
-                    log.debug("Converting to ProductSuggestion - Product ID: {}, imageUrl: {}", product.getId(), imageUrl);
-                    
-                    // Đảm bảo luôn có URL hình ảnh hợp lệ và KHÔNG BAO GIỜ sử dụng URL example.com
-                    if (imageUrl == null || imageUrl.trim().isEmpty() || imageUrl.contains("example.com")) {
-                        imageUrl = "https://placeholder.pics/svg/200x150/DEDEDE/555555/No%20Image";
-                        log.warn("Using default image URL for product ID: {} because original URL was invalid or missing", product.getId());
-                    }
-                    
-                    // Đảm bảo luôn lấy category name từ database
-                    String category = "Kính mắt";
-                    if (product.getCategoryName() != null && !product.getCategoryName().isEmpty()) {
-                        category = product.getCategoryName();
-                    } else if (product.getCategoryId() != null) {
-                        category = product.getCategoryId() == 1L ? "Kính râm" : "Kính cận";
-                    }
-                    
-                    return ProductSuggestion.builder()
-                            .productId(product.getId().toString())
-                            .name(product.getName())
-                            .imageUrl(imageUrl)
-                            .price(product.getPrice())
-                            .category(category)
-                            .detailUrl("http://localhost:8889/products/glasses/" + product.getId())
-                            .build();
-                })
+        // Limit to 5 products maximum
+        List<GlassDTO> limitedProducts = products;
+        if (products.size() > 5) {
+            limitedProducts = products.subList(0, 5);
+        }
+
+        return limitedProducts.stream()
+                .map(this::createProductSuggestion)
                 .toArray(ProductSuggestion[]::new);
+    }
+    
+    // Helper method to create a product suggestion from a glass DTO
+    private ProductSuggestion createProductSuggestion(GlassDTO glass) {
+        if (glass == null) return null;
+        
+        String imageUrl = glass.getImageFrontUrl();
+        if (imageUrl == null || imageUrl.trim().isEmpty() || imageUrl.contains("example.com")) {
+            imageUrl = frontendBaseUrl + "/placeholder.pics/svg/200x150/DEDEDE/555555/No%20Image";
+        }
+        
+        String category = "Kính mắt";
+        if (glass.getCategoryName() != null && !glass.getCategoryName().isEmpty()) {
+            category = glass.getCategoryName();
+        } else if (glass.getCategoryId() != null) {
+            // Sửa lại đúng phân loại: ID 1 là kính râm (Sunglasses), ID 2 là kính cận (Eyeglasses)
+            category = glass.getCategoryId() == 1L ? "Kính râm" : "Kính cận";
+        }
+        
+        log.info("Tạo gợi ý sản phẩm: ID={}, Name={}, CategoryID={}, CategoryName={}, ShowingCategory={}", 
+                 glass.getId(), glass.getName(), glass.getCategoryId(), glass.getCategoryName(), category);
+        
+        return ProductSuggestion.builder()
+                .productId(glass.getId().toString())
+                .name(glass.getName())
+                .imageUrl(imageUrl)
+                .price(glass.getPrice())
+                .category(category)
+                .detailUrl(frontendBaseUrl + "/products/glasses/" + glass.getId())
+                .build();
+    }
+
+    /**
+     * Trả về danh sách tất cả các màu sắc có sẵn
+     * @return Danh sách các màu sắc
+     */
+    public List<String> getAllColors() {
+        if (allColors.isEmpty()) {
+            refreshProductCache();
+        }
+        return allColors;
+    }
+
+    /**
+     * Trả về danh sách tất cả các thương hiệu có sẵn
+     * @return Danh sách các thương hiệu
+     */
+    public List<String> getAllBrands() {
+        if (allBrands.isEmpty()) {
+            refreshProductCache();
+        }
+        return allBrands;
+    }
+
+    /**
+     * Trả về danh sách tất cả các hình dạng gọng kính có sẵn
+     * @return Danh sách các hình dạng
+     */
+    public List<String> getAllShapes() {
+        if (allShapes.isEmpty()) {
+            refreshProductCache();
+        }
+        return allShapes;
+    }
+
+    /**
+     * Trả về danh sách tất cả các chất liệu có sẵn
+     * @return Danh sách các chất liệu
+     */
+    public List<String> getAllMaterials() {
+        if (allMaterials.isEmpty()) {
+            refreshProductCache();
+        }
+        return allMaterials;
     }
 }

@@ -203,6 +203,7 @@ public class OrderController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Map<String, Object>> deleteOrderById(@PathVariable Long id) {
+        System.out.println("Delete order with ID: " + id);
         Map<String, Object> response = new LinkedHashMap<String, Object>();
         response.put("status", HttpStatus.OK.value());
         response.put("data", orderService.deleteById(id));
