@@ -29,7 +29,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/reviews/**").hasAnyRole("USER","ADMIN", "SUPER")
+                        .requestMatchers("/api/reviews/getReviews**").permitAll()
+                        .requestMatchers("/api/reviews/create").hasAnyRole("USER","ADMIN", "SUPER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

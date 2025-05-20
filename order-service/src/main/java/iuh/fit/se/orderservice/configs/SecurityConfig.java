@@ -29,8 +29,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/orders/vnpay-return**","/ws/**","api/orders/orders-export**").permitAll()
                         .requestMatchers("/api/orders/**").hasAnyRole("USER","ADMIN", "SUPER")
-                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -46,6 +46,17 @@ public class SecurityConfig {
         protected void doFilterInternal(HttpServletRequest request,
                                         HttpServletResponse response,
                                         FilterChain filterChain) throws ServletException, IOException {
+
+            String path = request.getRequestURI();
+
+            if (path != null && path.startsWith("/api/orders/vnpay-return")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            if (path != null && path.startsWith("/ws")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
 
             String username = request.getHeader("X-Auth-User");
             String rolesStr = request.getHeader("X-Auth-Roles");

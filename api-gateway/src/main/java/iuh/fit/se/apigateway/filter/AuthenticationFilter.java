@@ -1,9 +1,11 @@
 package iuh.fit.se.apigateway.filter;
 
+import iuh.fit.se.apigateway.services.TokenRefreshService;
 import iuh.fit.se.apigateway.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -19,16 +21,50 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private TokenRefreshService tokenRefreshService;
+
+
     private static final List<String> OPEN_ENDPOINTS = List.of(
             "/api/auth/login",
             "/api/auth/register",
+            "/api/auth/verify-otp",
             "/api/auth/refresh",
-            "/api/auth/logout"
+            "/api/auth/logout",
+            "/api/auth/get-refresh-token",
+            "/api/auth/forgot-password",
+            "/api/auth/reset-password",
+            "/api/orders/vnpay-return",
+            "/api/orders/vnpay-return/",
+            "/swagger-ui",
+            "/swagger-ui/**",
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/webjars/**",
+            "/api/products/glasses",
+            "/api/products/sunglasses",
+            "/api/products/eyeglasses",
+            "/api/products/eyeglasses/men",
+            "/api/products/eyeglasses/women",
+            "/api/products/sunglasses/men",
+            "/api/products/sunglasses/women",
+            "/api/products/eyeglasses/men**",
+            "/api/products/eyeglasses/women**",
+            "/api/products/sunglasses/men**",
+            "/api/products/sunglasses/women**",
+            "/api/products/brands",
+            "/api/products/shapes",
+            "/api/products/materials",
+            "/api/products/colors",
+            "/api/products/search",
+            "/ws/",
+            "/ws",
+            "/ws/info",
+            "/api/chatbot/chat",
+            "/api/reviews/getReviews",
+            "/api/orders/orders-export",
+            "/api/carts/"
     );
-
-    public AuthenticationFilter() {
-        super(Config.class);
-    }
 
     @Override
     public GatewayFilter apply(Config config) {
@@ -37,8 +73,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             String path = exchange.getRequest().getURI().getPath();
 
             // Bỏ qua kiểm tra JWT nếu endpoint nằm trong danh sách OPEN_ENDPOINTS
-            if (OPEN_ENDPOINTS.contains(path)) {
-                return chain.filter(exchange);
+            for (String openEndpoint : OPEN_ENDPOINTS) {
+                if (path.contains(openEndpoint) || path.startsWith(openEndpoint)) {
+                    System.out.println("Bỏ qua xác thực JWT cho endpoint: " + path);
+                    return chain.filter(exchange);
+                }
             }
 
             // Kiểm tra header Authorization
@@ -55,8 +94,45 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
             try {
                 if (jwtUtil.isTokenExpired(token)) {
-                    return onError(exchange, "Token expired", HttpStatus.UNAUTHORIZED);
+                    System.out.println("Token expired, attempting to refresh");
+
+                    // 👉 Lấy refresh token từ cookie
+                    HttpCookie refreshCookie = exchange.getRequest().getCookies().getFirst("refreshToken");
+
+                    if (refreshCookie == null || refreshCookie.getValue().isEmpty()) {
+                        System.out.println("❌ Không tìm thấy refresh token trong cookie");
+                        return onError(exchange, "Refresh token không tồn tại", HttpStatus.UNAUTHORIZED);
+                    }
+
+                    String refreshToken = refreshCookie.getValue();
+
+                    // 👉 Gọi service để làm mới access token từ refresh token
+                    return tokenRefreshService.refreshToken(refreshToken)
+                            .flatMap(response -> {
+                                String newAccessToken = response.getAccessToken();
+                                if (newAccessToken == null || newAccessToken.isEmpty()) {
+                                    System.out.println("❌ Access token rỗng sau khi refresh");
+                                    return onError(exchange, "Không thể làm mới access token", HttpStatus.UNAUTHORIZED);
+                                }
+
+                                String newUsername = jwtUtil.extractUsername(newAccessToken);
+                                List<String> roles = jwtUtil.extractRoles(newAccessToken);
+
+                                ServerHttpRequest finalRequest = exchange.getRequest().mutate()
+                                        // Không cần gắn lại access token nếu không dùng phía dưới
+                                        .header("X-Auth-User", newUsername)
+                                        .header("X-Auth-Roles", String.join(",", roles != null ? roles : List.of()))
+                                        .build();
+
+                                System.out.println("✅ Làm mới token thành công, tiếp tục request");
+                                return chain.filter(exchange.mutate().request(finalRequest).build());
+                            })
+                            .onErrorResume(e -> {
+                                e.printStackTrace(); // debug
+                                return onError(exchange, "Làm mới token thất bại: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+                            });
                 }
+
 
                 String username = jwtUtil.extractUsername(token);
                 List<String> roles = jwtUtil.extractRoles(token); // Lấy roles từ JWT

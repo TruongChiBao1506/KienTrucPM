@@ -29,8 +29,26 @@ public class SecurityConfig {
         http
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/products/**","/api/reviews/**").hasAnyRole("USER","ADMIN", "SUPER")
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/products/glasses/*/update-stock**",
+                                "/api/products/glasses",
+                                "/api/products/glasses/**",
+                                "/api/products/eyeglasses/men**",
+                                "/api/products/eyeglasses/men",
+                                "/api/products/eyeglasses/women**",
+                                "/api/products/eyeglasses/women",
+                                "/api/products/sunglasses/men**",
+                                "/api/products/sunglasses/men",
+                                "/api/products/sunglasses/women**",
+                                "/api/products/sunglasses/women",
+                                "/api/products/sunglasses",
+                                "/api/products/eyeglasses",
+                                "/api/products/brands",
+                                "/api/products/shapes",
+                                "/api/products/materials",
+                                "/api/products/colors",
+                                "/api/products/search**").permitAll()
+                        .requestMatchers("/api/products/**").hasAnyRole("USER", "ADMIN", "SUPER")
+                        .requestMatchers("/api/reviews/**").hasAnyRole("USER","ADMIN", "SUPER")
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -47,12 +65,18 @@ public class SecurityConfig {
                                         HttpServletResponse response,
                                         FilterChain filterChain) throws ServletException, IOException {
 
+            String path = request.getRequestURI();
+            if (path != null && path.matches("^/api/products/glasses/\\d+/update-stock.*")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String username = request.getHeader("X-Auth-User");
             String rolesStr = request.getHeader("X-Auth-Roles");
 
             if (username != null && rolesStr != null) {
                 List<SimpleGrantedAuthority> authorities = Arrays.stream(rolesStr.split(","))
-                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
                         .collect(Collectors.toList());
 
                 UsernamePasswordAuthenticationToken authentication =

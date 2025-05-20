@@ -23,14 +23,9 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String fullname;
     private String username;
     private String password;
     private String email;
-    private Date dob;
-    private String phone;
-    private String address;
-    private boolean gender;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -58,4 +53,15 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
 }
