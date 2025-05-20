@@ -40,6 +40,8 @@ public class SecurityConfig {
                                 "/api/products/sunglasses/men",
                                 "/api/products/sunglasses/women**",
                                 "/api/products/sunglasses/women",
+                                "/api/products/sunglasses",
+                                "/api/products/eyeglasses",
                                 "/api/products/brands",
                                 "/api/products/shapes",
                                 "/api/products/materials",

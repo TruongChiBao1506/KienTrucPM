@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -26,87 +28,167 @@ public class ProductIntentAnalyzer {
         private Double minPrice;
         private Double maxPrice;
         private String searchKeyword;
-        private boolean wantsMostExpensive = false;  // Muốn tìm kính đắt nhất
-        private boolean wantsCheapest = false;       // Muốn tìm kính rẻ nhất
-        private boolean wantsBoth = false;           // Muốn tìm cả kính mắt và kính râm
+        private boolean wantsMostExpensive = false;
+        private boolean wantsCheapest = false;
+        private boolean wantsBoth = false;
     }
 
     public ProductIntent analyzeIntent(String message) {
         message = message.toLowerCase();
         ProductIntent intent = new ProductIntent();
 
-        // Detect product type
-        if (containsAnyOf(message, "kính cận", "kính đọc", "eyeglasses", "kính mắt", "gọng kính")) {
-            intent.setWantsEyeglasses(true);
+        // Detect product type with enhanced phrases
+        List<String> eyeglassPhrases = Arrays.asList(
+                "kính cận", "kính đọc", "eyeglasses", "kính mắt", "gọng kính",
+                "kính cận thị", "kính viễn", "kính cận thị", "prescription",
+                "glasses for reading", "optical", "eye glasses", "kính mắt thường"
+        );
+
+        List<String> sunglassPhrases = Arrays.asList(
+                "kính râm", "kính mát", "sunglasses", "chống nắng", "chống tia uv",
+                "kính đen", "kính che nắng", "sun glasses", "kính đi biển",
+                "kính chống nắng", "kính đi ngoài trời", "kính uv"
+        );
+
+        for (String phrase : eyeglassPhrases) {
+            if (message.contains(phrase)) {
+                intent.setWantsEyeglasses(true);
+                break;
+            }
         }
 
-        if (containsAnyOf(message, "kính râm", "kính mát", "sunglasses", "chống nắng", "chống tia uv")) {
-            intent.setWantsSunglasses(true);
+        for (String phrase : sunglassPhrases) {
+            if (message.contains(phrase)) {
+                intent.setWantsSunglasses(true);
+                break;
+            }
         }
 
         if (intent.isWantsEyeglasses() && intent.isWantsSunglasses()) {
             intent.setWantsBoth(true);
+            log.info("User wants both eyeglasses and sunglasses");
         }
 
-        // Detect most expensive/cheapest intent - cải thiện phát hiện "mắc nhất"
-        if (containsAnyOf(message, "đắt nhất", "mắc nhất", "cao nhất", "giá cao nhất", "giá đắt nhất", "most expensive", "highest price", "luxury", "đắt tiền nhất", "giá cao")) {
-            intent.setWantsMostExpensive(true);
-            log.info("Phát hiện người dùng muốn tìm kính đắt nhất: '{}'", message);
+        // Detect most expensive/cheapest intent with enhanced phrases
+        List<String> expensivePhrases = Arrays.asList(
+                "đắt nhất", "mắc nhất", "cao nhất", "giá cao nhất", "giá đắt nhất",
+                "most expensive", "highest price", "luxury", "đắt tiền nhất", "giá cao",
+                "cao cấp nhất", "sang trọng nhất", "premium", "top tier", "high-end",
+                "cao cấp", "đắt", "đắt đỏ", "giá cao"
+        );
+
+        List<String> cheapestPhrases = Arrays.asList(
+                "rẻ nhất", "giá rẻ nhất", "thấp nhất", "giá thấp nhất", "giá mềm nhất",
+                "cheapest", "lowest price", "best price", "giá tốt nhất", "giá tốt",
+                "phải chăng nhất", "affordable", "budget", "tiết kiệm nhất"
+        );
+
+        for (String phrase : expensivePhrases) {
+            if (message.contains(phrase)) {
+                intent.setWantsMostExpensive(true);
+                log.info("User wants the most expensive glasses: '{}'", message);
+                break;
+            }
         }
 
-        if (containsAnyOf(message, "rẻ nhất", "giá rẻ nhất", "thấp nhất", "giá thấp nhất", "giá mềm nhất", "cheapest", "lowest price", "best price")) {
-            intent.setWantsCheapest(true);
-            log.info("Phát hiện người dùng muốn tìm kính rẻ nhất");
+        for (String phrase : cheapestPhrases) {
+            if (message.contains(phrase)) {
+                intent.setWantsCheapest(true);
+                log.info("User wants the cheapest glasses");
+                break;
+            }
         }
 
-        // Detect gender
-        if (containsAnyOf(message, "nam", "đàn ông", "men", "man", "male", "boy", "cho nam", "của nam")) {
-            intent.setForMen(true);
+        // Detect gender with enhanced phrases
+        List<String> malePhrases = Arrays.asList(
+                "nam", "đàn ông", "men", "man", "male", "boy", "cho nam", "của nam",
+                "kính nam", "dành cho nam", "nam giới", "phái nam", "con trai"
+        );
+
+        List<String> femalePhrases = Arrays.asList(
+                "nữ", "phụ nữ", "women", "woman", "female", "girl", "cho nữ", "của nữ",
+                "kính nữ", "dành cho nữ", "nữ giới", "phái nữ", "con gái"
+        );
+
+        for (String phrase : malePhrases) {
+            if (message.contains(phrase)) {
+                intent.setForMen(true);
+                break;
+            }
         }
 
-        if (containsAnyOf(message, "nữ", "phụ nữ", "women", "woman", "female", "girl", "cho nữ", "của nữ")) {
-            intent.setForWomen(true);
+        for (String phrase : femalePhrases) {
+            if (message.contains(phrase)) {
+                intent.setForWomen(true);
+                break;
+            }
         }
 
-        // Detect brand - mở rộng dựa trên thương hiệu thực tế
-        for (String brand : new String[]{"rayban", "ray-ban", "gucci", "prada", "oakley", "dior", "chanel", "versace", "armani", "dolce", "gabbana", "burberry", "tom ford"}) {
+        // Detect brand - enhanced list
+        String[] brands = {
+                "rayban", "ray-ban", "ray ban", "gucci", "prada", "oakley", "dior",
+                "chanel", "versace", "armani", "dolce", "gabbana", "burberry",
+                "tom ford", "coach", "fendi", "persol", "miu miu", "giorgio armani",
+                "michael kors", "polaroid", "carrera", "police"
+        };
+
+        for (String brand : brands) {
             if (message.contains(brand)) {
                 intent.setBrand(brand);
+                log.info("Detected brand: {}", brand);
                 break;
             }
         }
 
-        // Detect shape - mở rộng dựa trên hình dạng gọng thực tế
-        for (String shape : new String[]{"vuông", "tròn", "mèo", "cat-eye", "oval", "chữ nhật", "rectangle", "square", "round", "aviator", "pilot", "butterfly", "hexagon"}) {
+        // Detect shape - enhanced list
+        String[] shapes = {
+                "vuông", "tròn", "mèo", "cat-eye", "cat eye", "oval", "chữ nhật",
+                "rectangle", "square", "round", "aviator", "pilot", "butterfly",
+                "hexagon", "shield", "clubmaster", "browline", "wayfarer", "geometric",
+                "oversized", "hình thang", "pentagon", "bầu dục", "hình bầu dục"
+        };
+
+        for (String shape : shapes) {
             if (message.contains(shape)) {
                 intent.setShape(shape);
+                log.info("Detected shape: {}", shape);
                 break;
             }
         }
 
-        // Detect material - mở rộng dựa trên chất liệu thực tế
-        for (String material : new String[]{"nhựa", "plastic", "kim loại", "metal", "titanium", "composite", "gỗ", "wood", "acetate"}) {
+        // Detect material - enhanced list
+        String[] materials = {
+                "nhựa", "plastic", "kim loại", "metal", "titanium", "composite",
+                "gỗ", "wood", "acetate", "carbon fiber", "stainless steel",
+                "thép không gỉ", "hợp kim", "alloy", "nylon", "carbon", "fiber",
+                "sợi carbon", "thép", "steel", "nhôm", "aluminum", "gọng nhựa",
+                "gọng kim loại", "gọng thép"
+        };
+
+        for (String material : materials) {
             if (message.contains(material)) {
                 intent.setMaterial(material);
+                log.info("Detected material: {}", material);
                 break;
             }
         }
 
-        // Detect color - mở rộng dựa trên màu sắc thực tế
-        for (String color : new String[]{"đen", "trắng", "đỏ", "xanh", "vàng", "nâu", "hồng", "tím", "xám", "bạc", "vàng gold", "black", "white", "red", "blue", "yellow", "brown", "pink", "purple", "gray", "silver", "gold"}) {
+        // Detect color - enhanced list
+        String[] colors = {
+                "đen", "trắng", "đỏ", "xanh lá", "xanh dương", "vàng", "nâu", "hồng",
+                "tím", "xám", "bạc", "vàng gold", "gold", "black", "white", "red",
+                "green", "blue", "yellow", "brown", "pink", "purple", "gray", "silver",
+                "navy", "beige", "khaki", "xanh rêu", "transparent", "tortoise",
+                "xanh lá cây", "rose gold", "vàng hồng", "cam", "orange", "trong suốt",
+                "multicolor", "nhiều màu", "amber", "burgundy", "wine red"
+        };
+
+        for (String color : colors) {
             if (message.contains(color)) {
                 intent.setColor(color);
+                log.info("Detected color: {}", color);
                 break;
             }
-        }
-
-        // Detect price range
-        if (message.contains("giá rẻ") || message.contains("giá thấp") || message.contains("sinh viên")) {
-            intent.setMinPrice(500000.0);
-            intent.setMaxPrice(1500000.0);
-        } else if (message.contains("cao cấp") || message.contains("sang trọng") || message.contains("luxury")) {
-            intent.setMinPrice(3000000.0);
-            intent.setMaxPrice(null);
         }
 
         // Extract specific price ranges if mentioned
@@ -121,6 +203,7 @@ public class ProductIntentAnalyzer {
 
             intent.setMinPrice(convertToVND(minAmount, minUnit));
             intent.setMaxPrice(convertToVND(maxAmount, maxUnit));
+            log.info("Detected price range: {}₫ to {}₫", intent.getMinPrice(), intent.getMaxPrice());
         } else {
             // Try single price patterns like "dưới 2 triệu" or "trên 500k"
             Pattern belowPattern = Pattern.compile("(?:dưới|không quá|less than|under|below)\\s*(\\d+)\\s*(triệu|tr|nghìn|k|ngàn)");
@@ -133,22 +216,23 @@ public class ProductIntentAnalyzer {
                 Double amount = Double.parseDouble(belowMatcher.group(1));
                 String unit = belowMatcher.group(2);
                 intent.setMaxPrice(convertToVND(amount, unit));
+                log.info("Detected maximum price: {}₫", intent.getMaxPrice());
             } else if (aboveMatcher.find()) {
                 Double amount = Double.parseDouble(aboveMatcher.group(1));
                 String unit = aboveMatcher.group(2);
                 intent.setMinPrice(convertToVND(amount, unit));
+                log.info("Detected minimum price: {}₫", intent.getMinPrice());
             }
         }
 
-        // Set search keyword if no specific filters are detected
-        if (!intent.isWantsEyeglasses() && !intent.isWantsSunglasses() &&
-                !intent.isForMen() && !intent.isForWomen() &&
-                intent.getBrand() == null && intent.getShape() == null &&
-                intent.getMaterial() == null && intent.getColor() == null &&
-                intent.getMinPrice() == null && intent.getMaxPrice() == null &&
-                !intent.isWantsMostExpensive() && !intent.isWantsCheapest()) {
-
-            intent.setSearchKeyword(message);
+        // Set reasonable defaults for price categories
+        if (message.contains("giá rẻ") || message.contains("giá thấp") || message.contains("sinh viên")) {
+            if (intent.getMinPrice() == null) intent.setMinPrice(0.0);
+            if (intent.getMaxPrice() == null) intent.setMaxPrice(1500000.0);
+            log.info("Set default budget price range: {}₫ to {}₫", intent.getMinPrice(), intent.getMaxPrice());
+        } else if (message.contains("cao cấp") || message.contains("sang trọng") || message.contains("luxury")) {
+            if (intent.getMinPrice() == null) intent.setMinPrice(3000000.0);
+            log.info("Set default luxury price minimum: {}₫", intent.getMinPrice());
         }
 
         return intent;

@@ -29,7 +29,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/orders/vnpay-return**","/ws/**").permitAll()
+                        .requestMatchers("/api/orders/vnpay-return**","/ws/**","api/orders/orders-export**").permitAll()
                         .requestMatchers("/api/orders/**").hasAnyRole("USER","ADMIN", "SUPER")
                 )
                 .sessionManagement(session -> session

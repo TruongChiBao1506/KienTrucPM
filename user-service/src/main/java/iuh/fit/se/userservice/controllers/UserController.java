@@ -8,16 +8,14 @@ import iuh.fit.se.userservice.events.dtos.UserEmailUpdateEvent;
 import iuh.fit.se.userservice.events.listeners.UserEventListener;
 import iuh.fit.se.userservice.events.publishers.UserEventPublisher;
 import iuh.fit.se.userservice.feign.AuthServiceClient;
-import iuh.fit.se.userservice.index.UserIndex;
-import iuh.fit.se.userservice.repositories.UserRepository;
-import iuh.fit.se.userservice.services.UserIndexService;
+//import iuh.fit.se.userservice.index.UserIndex;
+//import iuh.fit.se.userservice.services.UserIndexService;
 import iuh.fit.se.userservice.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,9 +33,6 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private UserIndexService userIndexService;
 
     @Autowired
     private UserEventPublisher userEventPublisher;
@@ -116,7 +111,7 @@ public class UserController {
                 user.setGender(userProfileDTO.isGender());
                 user.setDob(userProfileDTO.getDob());
                 userService.save(user);
-                userIndexService.addUserToElasticsearch(user.getId());
+//                userIndexService.addUserToElasticsearch(user.getId());
                 Map<String, Object> response = new LinkedHashMap<String, Object>();
                 response.put("status", HttpStatus.OK.value());
                 response.put("message", "Cập nhật thông tin thành công!");
@@ -139,29 +134,33 @@ public class UserController {
             response.put("message", "Lỗi khi lấy danh sách người dùng: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-    }
-
-    @GetMapping("/all-by-role/{userName}")
-    public ResponseEntity<Map<String, Object>> getUserByRole(@PathVariable("userName") String userName) {
+    }    @GetMapping("/all-by-role/{userName}")
+    public ResponseEntity<Map<String, Object>> getUserByRole(
+            @PathVariable("userName") String userName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         User currentUser = userService.findByUsername(userName).get();
         System.out.println("currentUser: " + currentUser);
         Map<String, Object> response = new LinkedHashMap<>();
-        List<UserDTO> users = null;
+        
         String role = authServiceClient.getRoleByUserId(currentUser.getUserId());
+        Page<UserDTO> userPage;
+        
         if (role.equals("SUPER")) {
-
-            users = userService.findAll();
-            System.out.println("users: " + users);
-            response.put("status", HttpStatus.OK.value());
-            response.put("data", users);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
+            userPage = userService.findAllPaginated(page, size);
         } else {
             List<Long> userIds = authServiceClient.getUserIdsByRole("USER");
-            users = userService.findAllByIds(userIds);
-            response.put("status", HttpStatus.OK.value());
-            response.put("data", users);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
+            userPage = userService.findAllByIdsPaginated(userIds, page, size);
         }
+        
+        response.put("status", HttpStatus.OK.value());
+        response.put("data", userPage.getContent());
+        response.put("currentPage", userPage.getNumber());
+        response.put("totalItems", userPage.getTotalElements());
+        response.put("totalPages", userPage.getTotalPages());
+        response.put("hasMore", !userPage.isLast());
+        
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/delete/{id}")
@@ -171,7 +170,7 @@ public class UserController {
             return authResponse;
         } else {
             userService.deleteById(id);
-            userIndexService.deleteUserByUserId(id);
+//            userIndexService.deleteUserByUserId(id);
             Map<String, Object> response = new LinkedHashMap<>();
             response.put("status", HttpStatus.OK.value());
             response.put("message", "Xóa người dùng thành công");
@@ -213,7 +212,7 @@ public class UserController {
                         user.setDob(userDTO.getDob());
                         user.setUserId(Long.valueOf(authResponse.getBody().get("message").toString()));
                         userService.save(user);
-                        userIndexService.addUserToElasticsearch(user.getUserId());
+//                        userIndexService.addUserToElasticsearch(user.getUserId());
                         response.put("status", HttpStatus.OK.value());
                         response.put("message", "Thêm người dùng thành công");
                         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -273,7 +272,7 @@ public class UserController {
                         user.setGender(userDTO.isGender());
                         user.setDob(userDTO.getDob());
                         userService.save(user);
-                        userIndexService.addUserToElasticsearch(user.getUserId());
+//                        userIndexService.addUserToElasticsearch(user.getUserId());
                         response.put("status", HttpStatus.OK.value());
                         response.put("message", "Cập nhật thông tin thành công");
                         return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -344,44 +343,59 @@ public class UserController {
             e.printStackTrace();
             return false; // Timeout hoặc lỗi
         }
-    }
-    @GetMapping("/filter")
+    }    @GetMapping("/filter")
     public ResponseEntity<Map<String, Object>> getUsers(
-            @RequestParam(value = "keyword",required = false) String keyword,
-            @RequestParam(value = "gender",required = false) String gender,
-            @RequestParam(value = "role",required = false) String role
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "gender", required = false) String gender,
+            @RequestParam(value = "role", required = false) String role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         System.out.println("keyword: " + keyword);
         System.out.println("gender: " + gender);
         System.out.println("role: " + role);
-        List<UserDTO> users = userService.filterUsers(keyword, gender, role);
+        
         Map<String, Object> response = new LinkedHashMap<String, Object>();
-        response.put("status", HttpStatus.OK.value());
-        response.put("data", users);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-    @GetMapping("/sync")
-    public ResponseEntity<Map<String, Object>> syncUsers(){
-        try{
-            Map<String, Object> response = new LinkedHashMap<String, Object>();
-            userIndexService.syncUsersToElasticsearch();
+        try {
+            Page<UserDTO> userPage = userService.filterUsersPaginated(keyword, gender, role, page, size);
+            
             response.put("status", HttpStatus.OK.value());
-            response.put("message", "Đồng bộ người dùng thành công");
+            response.put("data", userPage.getContent());
+            response.put("currentPage", userPage.getNumber());
+            response.put("totalItems", userPage.getTotalElements());
+            response.put("totalPages", userPage.getTotalPages());
+            response.put("hasMore", !userPage.isLast());
+            
             return ResponseEntity.status(HttpStatus.OK).body(response);
-        }catch (Exception e){
-            Map<String, Object> response = new LinkedHashMap<>();
+        } catch (Exception e) {
             response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-            response.put("message", "Lỗi khi đồng bộ người dùng: " + e.getMessage());
+            response.put("message", "Có lỗi xảy ra khi lọc danh sách người dùng");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-    @GetMapping("/search")
-    public List<UserIndex> searchUsers(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String gender,
-            @RequestParam(required = false) String role) throws IOException {
-        return userService.searchUsers(keyword, gender, role);
-    }
+//    @GetMapping("/sync")
+//    public ResponseEntity<Map<String, Object>> syncUsers(){
+//        try{
+//            Map<String, Object> response = new LinkedHashMap<String, Object>();
+//            userIndexService.syncUsersToElasticsearch();
+//            response.put("status", HttpStatus.OK.value());
+//            response.put("message", "Đồng bộ người dùng thành công");
+//            return ResponseEntity.status(HttpStatus.OK).body(response);
+//        }catch (Exception e){
+//            Map<String, Object> response = new LinkedHashMap<>();
+//            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+//            response.put("message", "Lỗi khi đồng bộ người dùng: " + e.getMessage());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+//        }
+//    }
+
+//    @GetMapping("/search")
+//    public List<UserIndex> searchUsers(
+//            @RequestParam(required = false) String keyword,
+//            @RequestParam(required = false) String gender,
+//            @RequestParam(required = false) String role) throws IOException {
+//        return userService.searchUsers(keyword, gender, role);
+//    }
     @PostMapping("/change-password")
     public ResponseEntity<Map<String, Object>> handleChangePassword(@RequestBody AuthUserChangePassword authUserChangePassword) {
         Map<String, Object> response = new LinkedHashMap<>();

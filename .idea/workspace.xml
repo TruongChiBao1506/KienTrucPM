@@ -5,21 +5,53 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="08d585e9-b2f1-401f-97c9-d2fb074d8867" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/dto/SearchCriteria.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductDataCache.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductSearchService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose_kafka.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/feign/CartServiceClient.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/api-gateway/src/main/java/iuh/fit/se/apigateway/filter/AuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/api-gateway/src/main/java/iuh/fit/se/apigateway/filter/AuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/controller/ChatbotController.java" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/controller/ChatbotController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/GeminiService.java" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/GeminiService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductDataService.java" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductDataService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductIntentAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/ProductIntentAnalyzer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/RateLimitService.java" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot-service/src/main/java/iuh/fit/se/chatbotservice/service/RateLimitService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chatbot-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/chatbot-service/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eureka-server/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/eureka-server/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/user-service.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/user-service.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/configs/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/configs/SecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/controllers/OrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/controllers/OrderController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/entities/Order.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/entities/Order.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/entities/OrderItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/entities/OrderItem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/repositories/OrderItemRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/repositories/OrderItemRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/repositories/OrderRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/repositories/OrderRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/OrderService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/OrderServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/iuh/fit/se/orderservice/services/impl/OrderServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Repositories/GlassRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Repositories/GlassRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/GlassService.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/GlassService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/GlassServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/Services/impl/GlassServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/configs/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/configs/SecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/controllers/GlassController.java" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/java/iuh/fit/se/productservice/controllers/GlassController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/product-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/product-service/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/configs/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/configs/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/controllers/ReviewController.java" beforeDir="false" afterPath="$PROJECT_DIR$/review-service/src/main/java/iuh/fit/se/reviewservice/controllers/ReviewController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/review-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/review-service/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/UserServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/UserServiceApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/configs/ElasticsearchClientConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/configs/ElasticsearchConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/controllers/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/controllers/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/events/listeners/UserEventListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/events/listeners/UserEventListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/index/UserIndex.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/repositories/UserElasticsearchRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/UserIndexService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/impl/UserIndexServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/java/iuh/fit/se/userservice/services/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/user-service/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,6 +61,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
@@ -241,7 +274,15 @@
       <workItem from="1746548301775" duration="4908000" />
       <workItem from="1746630390552" duration="9382000" />
       <workItem from="1747036308172" duration="4356000" />
-      <workItem from="1747068789681" duration="1120000" />
+      <workItem from="1747068789681" duration="5059000" />
+      <workItem from="1747121204099" duration="7041000" />
+      <workItem from="1747154416167" duration="6409000" />
+      <workItem from="1747209295586" duration="2714000" />
+      <workItem from="1747237115649" duration="2740000" />
+      <workItem from="1747294624879" duration="8051000" />
+      <workItem from="1747315695778" duration="17511000" />
+      <workItem from="1747670934410" duration="9120000" />
+      <workItem from="1747750216590" duration="8915000" />
     </task>
     <servers />
   </component>

@@ -1,14 +1,12 @@
 package iuh.fit.se.orderservice.services.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import iuh.fit.se.orderservice.dtos.*;
 import iuh.fit.se.orderservice.entities.Order;
 import iuh.fit.se.orderservice.entities.OrderItem;
 import iuh.fit.se.orderservice.events.publisher.OrderEventPublisher;
-import iuh.fit.se.orderservice.feign.AuthServiceClient;
-import iuh.fit.se.orderservice.feign.NotificationServiceClient;
-import iuh.fit.se.orderservice.feign.ProductServiceClient;
-import iuh.fit.se.orderservice.feign.UserServiceClient;
+import iuh.fit.se.orderservice.feign.*;
 import iuh.fit.se.orderservice.repositories.OrderItemRepository;
 import iuh.fit.se.orderservice.repositories.OrderRepository;
 import iuh.fit.se.orderservice.services.OrderService;
@@ -16,7 +14,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +38,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+    private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
+    
     @Autowired
     private OrderRepository orderRepository;
 
@@ -60,6 +66,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private CartServiceClient cartServiceClient;
 
 
     @Override
@@ -117,6 +126,7 @@ public class OrderServiceImpl implements OrderService {
         notification.setMessage("New Order: #" + order.getOrderNumber());
         notification.setCreatedAt(LocalDateTime.now());
         notification.setRead(false);
+        cartServiceClient.clearCart(orderRequest.getUserId());
         orderEventPublisher.sendNotification(notification);
         messagingTemplate.convertAndSend("/topic/orders", notification);
 //        ResponseEntity<Map<String, Object>> responseNotification = notificationServiceClient.saveNotification(notification);
@@ -193,6 +203,203 @@ public class OrderServiceImpl implements OrderService {
             orderDTOs.add(orderDTO);
         }
         return orderDTOs;
+    }
+
+    @Override
+    @CircuitBreaker(name = "orderService", fallbackMethod = "findAllPaginatedFallback")
+    public Page<OrderDTO> findAllPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orderPage = orderRepository.findAll(pageable);
+        
+        List<OrderDTO> orderDTOList = new ArrayList<>();
+        for (Order order : orderPage.getContent()) {
+            OrderDTO orderDTO = new OrderDTO();
+            // Lấy thông tin người dùng từ UserServiceClient
+            ResponseEntity<Map<String, Object>> response = userServiceClient.getUserProfileById(order.getUserId());
+            if (response.getStatusCode().is2xxSuccessful()) {
+                List<OrderItemUserDTO> listOrderItem = new ArrayList<>();
+                orderDTO.setOrderNumber(order.getOrderNumber());
+                orderDTO.setOrderDate(order.getOrderDate());
+                orderDTO.setId(order.getId());
+                orderDTO.setStatus(order.getStatus());
+                orderDTO.setPaymentMethod(order.getPaymentMethod());
+                orderDTO.setShippingAddress(order.getShippingAddress());
+                orderDTO.setTotalAmount(order.getTotalAmount());
+                orderDTO.setUser(objectMapper.convertValue(response.getBody().get("data"), UserDTO.class));
+                String email = (String) authServiceClient.getAuthUserEmailById(order.getUserId()).getBody().get("data");
+                orderDTO.getUser().setEmail(email);
+                for (OrderItem oi : order.getOrderItems()) {
+                    // Lấy thông tin sản phẩm từ ProductServiceClient
+                    OrderItemFromProductDTO responseProducts = productServiceClient.getProductById(oi.getProductId());
+                    OrderItemUserDTO orderItemUserDTO = new OrderItemUserDTO();
+                    orderItemUserDTO.setOrderItemId(oi.getOrderItemId());
+                    orderItemUserDTO.setQuantity(oi.getQuantity());
+                    orderItemUserDTO.setUnitPrice(oi.getUnitPrice());
+                    orderItemUserDTO.setTotalPrice(oi.getTotalPrice());
+                    orderItemUserDTO.setProduct(responseProducts);
+                    listOrderItem.add(orderItemUserDTO);
+                }
+                orderDTO.setOrderItems(listOrderItem);
+            } else {
+                logger.error("Failed to fetch user data for order ID: {}", order.getId());
+            }
+            orderDTOList.add(orderDTO);
+        }
+        
+        // Sắp xếp theo ngày đơn hàng giảm dần (mới nhất lên đầu)
+        orderDTOList.sort((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()));
+        
+        return new PageImpl<>(orderDTOList, pageable, orderPage.getTotalElements());
+    }
+    
+    // Phương thức fallback cho findAllPaginated
+    public Page<OrderDTO> findAllPaginatedFallback(int page, int size, Throwable t) {
+        logger.error("Circuit breaker triggered for findAllPaginated. Error: {}", t.getMessage(), t);
+        
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Order> orderPage = orderRepository.findAll(pageable);
+            
+            List<OrderDTO> orderDTOList = new ArrayList<>();
+            for (Order order : orderPage.getContent()) {
+                OrderDTO orderDTO = new OrderDTO();
+                orderDTO.setOrderNumber(order.getOrderNumber());
+                orderDTO.setOrderDate(order.getOrderDate());
+                orderDTO.setId(order.getId());
+                orderDTO.setStatus(order.getStatus());
+                orderDTO.setPaymentMethod(order.getPaymentMethod());
+                orderDTO.setShippingAddress(order.getShippingAddress());
+                orderDTO.setTotalAmount(order.getTotalAmount());
+                // Trong trường hợp fallback, có thể không lấy được thông tin chi tiết về user hoặc sản phẩm
+                orderDTOList.add(orderDTO);
+            }
+            
+            orderDTOList.sort((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()));
+            
+            return new PageImpl<>(orderDTOList, pageable, orderPage.getTotalElements());
+        } catch (Exception ex) {
+            logger.error("Error in fallback method: {}", ex.getMessage(), ex);
+            return new PageImpl<>(new ArrayList<>(), PageRequest.of(page, size), 0);
+        }
+    }
+
+    @Override
+    @CircuitBreaker(name = "orderService", fallbackMethod = "filterOrdersPaginatedFallback")
+    public Page<OrderDTO> filterOrdersPaginated(String keyword, String status, String sort, int page, int size) {
+        Specification<Order> spec = Specification.where(null);
+
+        if (keyword != null && !keyword.isEmpty()) {
+            spec = spec.and(containsKeyword(keyword));
+        }
+
+        if (status != null && !status.isEmpty()) {
+            spec = spec.and(hasStatus(status));
+        }
+
+        Sort sortOption = Sort.unsorted();
+        if ("asc".equalsIgnoreCase(sort)) {
+            sortOption = Sort.by("totalAmount").ascending();
+        } else if ("desc".equalsIgnoreCase(sort)) {
+            sortOption = Sort.by("totalAmount").descending();
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sortOption);
+        Page<Order> orderPage = orderRepository.findAll(spec, pageable);
+        
+        List<OrderDTO> orderDTOList = new ArrayList<>();
+
+        for (Order order : orderPage.getContent()) {
+            OrderDTO orderDTO = new OrderDTO();
+            orderDTO.setOrderNumber(order.getOrderNumber());
+            orderDTO.setOrderDate(order.getOrderDate());
+            orderDTO.setId(order.getId());
+            orderDTO.setStatus(order.getStatus());
+            orderDTO.setPaymentMethod(order.getPaymentMethod());
+            orderDTO.setShippingAddress(order.getShippingAddress());
+            orderDTO.setTotalAmount(order.getTotalAmount());
+
+            // Lấy thông tin người dùng
+            ResponseEntity<Map<String, Object>> response = userServiceClient.getUserProfileById(order.getUserId());
+            if (response.getStatusCode().is2xxSuccessful()) {
+                UserDTO userDTO = objectMapper.convertValue(response.getBody().get("data"), UserDTO.class);
+                // Gọi Auth Service để lấy email
+                ResponseEntity<Map<String, Object>> emailResponse = authServiceClient.getAuthUserEmailById(order.getUserId());
+                if (emailResponse.getStatusCode().is2xxSuccessful()) {
+                    String email = (String) emailResponse.getBody().get("data");
+                    userDTO.setEmail(email);
+                }
+                orderDTO.setUser(userDTO);
+            } else {
+                logger.error("Failed to fetch user data for order ID: {}", order.getId());
+            }
+
+            // Lấy thông tin các OrderItem và sản phẩm tương ứng
+            List<OrderItemUserDTO> listOrderItem = new ArrayList<>();
+            for (OrderItem oi : order.getOrderItems()) {
+                OrderItemUserDTO orderItemUserDTO = new OrderItemUserDTO();
+                orderItemUserDTO.setOrderItemId(oi.getOrderItemId());
+                orderItemUserDTO.setQuantity(oi.getQuantity());
+                orderItemUserDTO.setUnitPrice(oi.getUnitPrice());
+                orderItemUserDTO.setTotalPrice(oi.getTotalPrice());
+
+                // Lấy sản phẩm từ ProductServiceClient
+                OrderItemFromProductDTO responseProduct = productServiceClient.getProductById(oi.getProductId());
+                orderItemUserDTO.setProduct(responseProduct);
+                listOrderItem.add(orderItemUserDTO);
+            }
+            orderDTO.setOrderItems(listOrderItem);
+
+            orderDTOList.add(orderDTO);
+        }
+
+        return new PageImpl<>(orderDTOList, pageable, orderPage.getTotalElements());
+    }
+    
+    // Phương thức fallback cho filterOrdersPaginated
+    public Page<OrderDTO> filterOrdersPaginatedFallback(String keyword, String status, String sort, int page, int size, Throwable t) {
+        logger.error("Circuit breaker triggered for filterOrdersPaginated. Error: {}", t.getMessage(), t);
+        
+        try {
+            Specification<Order> spec = Specification.where(null);
+
+            if (keyword != null && !keyword.isEmpty()) {
+                spec = spec.and(containsKeyword(keyword));
+            }
+
+            if (status != null && !status.isEmpty()) {
+                spec = spec.and(hasStatus(status));
+            }
+
+            Sort sortOption = Sort.unsorted();
+            if ("asc".equalsIgnoreCase(sort)) {
+                sortOption = Sort.by("totalAmount").ascending();
+            } else if ("desc".equalsIgnoreCase(sort)) {
+                sortOption = Sort.by("totalAmount").descending();
+            }
+
+            Pageable pageable = PageRequest.of(page, size, sortOption);
+            Page<Order> orderPage = orderRepository.findAll(spec, pageable);
+            
+            List<OrderDTO> orderDTOList = new ArrayList<>();
+
+            for (Order order : orderPage.getContent()) {
+                OrderDTO orderDTO = new OrderDTO();
+                orderDTO.setOrderNumber(order.getOrderNumber());
+                orderDTO.setOrderDate(order.getOrderDate());
+                orderDTO.setId(order.getId());
+                orderDTO.setStatus(order.getStatus());
+                orderDTO.setPaymentMethod(order.getPaymentMethod());
+                orderDTO.setShippingAddress(order.getShippingAddress());
+                orderDTO.setTotalAmount(order.getTotalAmount());
+                // Trong trường hợp fallback, có thể không lấy được thông tin chi tiết về user hoặc sản phẩm
+                orderDTOList.add(orderDTO);
+            }
+            
+            return new PageImpl<>(orderDTOList, pageable, orderPage.getTotalElements());
+        } catch (Exception ex) {
+            logger.error("Error in fallback method: {}", ex.getMessage(), ex);
+            return new PageImpl<>(new ArrayList<>(), PageRequest.of(page, size), 0);
+        }
     }
 
     @Override
@@ -494,22 +701,100 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @CircuitBreaker(name = "orderService", fallbackMethod = "getOrdersByYearAndMonthPaginatedFallback")
+    public Page<OrderDTO> getOrdersByYearAndMonthPaginated(int year, Integer month, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orderPage;
+        
+        if (month != null) {
+            orderPage = orderRepository.findByYearAndMonthPaginated(year, month, pageable);
+        } else {
+            orderPage = orderRepository.findByYearPaginated(year, pageable);
+        }
+        
+        List<OrderDTO> orderDTOList = new ArrayList<>();
+        for (Order order : orderPage.getContent()) {
+            OrderDTO orderDTO = new OrderDTO();
+            orderDTO.setId(order.getId());
+            orderDTO.setOrderNumber(order.getOrderNumber());
+            orderDTO.setOrderDate(order.getOrderDate());
+            orderDTO.setTotalAmount(order.getTotalAmount());
+            orderDTO.setStatus(order.getStatus());
+            orderDTO.setPaymentMethod(order.getPaymentMethod());
+            orderDTO.setShippingAddress(order.getShippingAddress());
+            
+            try {
+                UserDTO userDTO = objectMapper.convertValue(
+                    userServiceClient.getUserProfileById(order.getUserId()).getBody().get("data"), 
+                    UserDTO.class
+                );
+                orderDTO.setUser(userDTO);
+            } catch (Exception e) {
+                logger.error("Error fetching user data for order ID: {}", order.getId(), e);
+            }
+            
+            orderDTOList.add(orderDTO);
+        }
+        
+        return new PageImpl<>(orderDTOList, pageable, orderPage.getTotalElements());
+    }
+    
+    // Phương thức fallback cho getOrdersByYearAndMonthPaginated
+    public Page<OrderDTO> getOrdersByYearAndMonthPaginatedFallback(int year, Integer month, int page, int size, Throwable t) {
+        logger.error("Circuit breaker triggered for getOrdersByYearAndMonthPaginated. Error: {}", t.getMessage(), t);
+        
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Order> orderPage;
+            
+            if (month != null) {
+                orderPage = orderRepository.findByYearAndMonthPaginated(year, month, pageable);
+            } else {
+                orderPage = orderRepository.findByYearPaginated(year, pageable);
+            }
+            
+            List<OrderDTO> orderDTOList = new ArrayList<>();
+            for (Order order : orderPage.getContent()) {
+                OrderDTO orderDTO = new OrderDTO();
+                orderDTO.setId(order.getId());
+                orderDTO.setOrderNumber(order.getOrderNumber());
+                orderDTO.setOrderDate(order.getOrderDate());
+                orderDTO.setTotalAmount(order.getTotalAmount());
+                orderDTO.setStatus(order.getStatus());
+                orderDTO.setPaymentMethod(order.getPaymentMethod());
+                orderDTO.setShippingAddress(order.getShippingAddress());
+                // Trong fallback không thể lấy thông tin user đầy đủ
+                orderDTOList.add(orderDTO);
+            }
+            
+            return new PageImpl<>(orderDTOList, pageable, orderPage.getTotalElements());
+        } catch (Exception ex) {
+            logger.error("Error in fallback method: {}", ex.getMessage(), ex);
+            return new PageImpl<>(new ArrayList<>(), PageRequest.of(page, size), 0);
+        }
+    }
+
+    @Override
     public void exportOrderData(List<OrderDTO> orders, HttpServletResponse response) throws IOException {
+        // Thiết lập header cho response
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=BaoCaoDonHang.xlsx");
+
         Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Orders");
+        Sheet sheet = workbook.createSheet("Đơn hàng");
 
         // Tạo tiêu đề cho file Excel
         Row titleRow = sheet.createRow(0);
         Cell titleCell = titleRow.createCell(0);
-        titleCell.setCellValue("Order Report");
+        titleCell.setCellValue("Báo Cáo Đơn Hàng");
 
         // Định dạng tiêu đề
         CellStyle titleStyle = workbook.createCellStyle();
         Font titleFont = workbook.createFont();
         titleFont.setBold(true);
-        titleFont.setFontHeightInPoints((short) 16); // Kích thước chữ lớn hơn
-        titleStyle.setAlignment(HorizontalAlignment.CENTER); // Căn giữa ngang
-        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER); // Căn giữa dọc
+        titleFont.setFontHeightInPoints((short) 16);
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         titleStyle.setFont(titleFont);
         titleCell.setCellStyle(titleStyle);
 
@@ -520,7 +805,7 @@ public class OrderServiceImpl implements OrderService {
 
         // Tạo Header
         Row headerRow = sheet.createRow(currentRowIndex++);
-        String[] headers = {"Order Number", "Customer", "Order Date", "Shipping Address", "Payment Method", "Status", "Total Amount"};
+        String[] headers = {"Mã đơn hàng", "Khách hàng", "Ngày đặt", "Địa chỉ giao hàng", "Phương thức thanh toán", "Trạng thái", "Tổng tiền"};
         CellStyle headerStyle = workbook.createCellStyle();
         Font font = workbook.createFont();
         font.setBold(true);
@@ -533,12 +818,12 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // Điền dữ liệu
-        double totalRevenue = 0;
+        double tongDoanhThu = 0;
         for (OrderDTO order : orders) {
             Row row = sheet.createRow(currentRowIndex++);
 
             row.createCell(0).setCellValue(order.getOrderNumber());
-            row.createCell(1).setCellValue(order.getUser().getUsername()); // User giả định có trường "name"
+            row.createCell(1).setCellValue(order.getUser().getUsername());
             row.createCell(2).setCellValue(order.getOrderDate().toString());
             row.createCell(3).setCellValue(order.getShippingAddress());
             row.createCell(4).setCellValue(order.getPaymentMethod());
@@ -546,8 +831,31 @@ public class OrderServiceImpl implements OrderService {
             row.createCell(6).setCellValue(order.getTotalAmount());
 
             // Tính tổng doanh thu
-            totalRevenue += order.getTotalAmount();
+            tongDoanhThu += order.getTotalAmount();
         }
+
+        // Thêm dòng tổng doanh thu
+        Row totalRow = sheet.createRow(currentRowIndex + 1);
+        Cell totalLabelCell = totalRow.createCell(5);
+        totalLabelCell.setCellValue("TỔNG DOANH THU:");
+
+        CellStyle totalLabelStyle = workbook.createCellStyle();
+        Font totalFont = workbook.createFont();
+        totalFont.setBold(true);
+        totalLabelStyle.setFont(totalFont);
+        totalLabelCell.setCellStyle(totalLabelStyle);
+
+        Cell totalValueCell = totalRow.createCell(6);
+        totalValueCell.setCellValue(tongDoanhThu);
+
+        // Tự động điều chỉnh độ rộng cột
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        // DÒNG QUAN TRỌNG - Ghi workbook vào output stream của response
+        workbook.write(response.getOutputStream());
+        workbook.close();
     }
 
     @Override

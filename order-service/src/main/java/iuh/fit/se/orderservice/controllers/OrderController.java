@@ -5,6 +5,7 @@ import iuh.fit.se.orderservice.dtos.*;
 import iuh.fit.se.orderservice.entities.Order;
 import iuh.fit.se.orderservice.events.publisher.OrderEventPublisher;
 import iuh.fit.se.orderservice.feign.AuthServiceClient;
+import iuh.fit.se.orderservice.feign.CartServiceClient;
 import iuh.fit.se.orderservice.feign.ProductServiceClient;
 import iuh.fit.se.orderservice.feign.UserServiceClient;
 import iuh.fit.se.orderservice.services.OrderItemService;
@@ -14,6 +15,7 @@ import iuh.fit.se.orderservice.utils.VNPayUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -52,6 +54,9 @@ public class OrderController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private CartServiceClient cartServiceClient;
 
     @Value("${vnpay.hash_secret}")
     private String VNP_HASH_SECRET;
@@ -143,6 +148,7 @@ public class OrderController {
             notification.setMessage("New Order: #" + order.getOrderNumber());
             notification.setCreatedAt(LocalDateTime.now());
             notification.setRead(false);
+            cartServiceClient.clearCart(order.getUserId());
             orderEventPublisher.sendNotification(notification);
             messagingTemplate.convertAndSend("/topic/orders", notification);
             ResponseEntity<Map<String, Object>> responseAuth = authServiceClient.getAuthUserEmailById(order.getUserId());
@@ -167,16 +173,27 @@ public class OrderController {
             responseRequest.put("message", "Payment failed!");
             return ResponseEntity.ok(responseRequest);
         }
-    }
-
-    @GetMapping("/all")
-    public ResponseEntity<Map<String, Object>> getAllOrders() {
+    }    @GetMapping("/all")
+    public ResponseEntity<Map<String, Object>> getAllOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Map<String, Object> response = new LinkedHashMap<String, Object>();
-        List<OrderDTO> orders = orderService.findAll();
-        orders.sort((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()));
-        response.put("status", HttpStatus.OK.value());
-        response.put("data", orders);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        try {
+            Page<OrderDTO> orderPage = orderService.findAllPaginated(page, size);
+            
+            response.put("status", HttpStatus.OK.value());
+            response.put("data", orderPage.getContent());
+            response.put("currentPage", orderPage.getNumber());
+            response.put("totalItems", orderPage.getTotalElements());
+            response.put("totalPages", orderPage.getTotalPages());
+            response.put("hasMore", !orderPage.isLast());
+            
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Có lỗi xảy ra khi tải danh sách đơn hàng");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @GetMapping("/order")
@@ -208,8 +225,7 @@ public class OrderController {
         response.put("status", HttpStatus.OK.value());
         response.put("data", orderService.deleteById(id));
         return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-    @GetMapping("/update-status/{id}")
+    }    @GetMapping("/update-status/{id}")
     public ResponseEntity<Map<String, Object>> updateOrderStatus(@PathVariable Long id,
                                                                  @RequestParam String status) {
         Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -222,14 +238,31 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @GetMapping("/filter")
-    public ResponseEntity<Map<String, Object>> filterOrders(@RequestParam(value = "keyword", required = false) String keyword,
-                                                            @RequestParam(value = "status", required = false) String status,
-                                                            @RequestParam(value = "sort", required = false) String sort) {
+    public ResponseEntity<Map<String, Object>> filterOrders(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "sort", required = false) String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Map<String, Object> response = new LinkedHashMap<String, Object>();
-        response.put("status", HttpStatus.OK.value());
-        response.put("data", orderService.filterOrders(keyword, status, sort));
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        try {
+            Page<OrderDTO> orderPage = orderService.filterOrdersPaginated(keyword, status, sort, page, size);
+            
+            response.put("status", HttpStatus.OK.value());
+            response.put("data", orderPage.getContent());
+            response.put("currentPage", orderPage.getNumber());
+            response.put("totalItems", orderPage.getTotalElements());
+            response.put("totalPages", orderPage.getTotalPages());
+            response.put("hasMore", !orderPage.isLast());
+            
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Có lỗi xảy ra khi lọc danh sách đơn hàng");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
+    
     @GetMapping("/orders-statistic")
     public ResponseEntity<Map<String, Object>> getOrderStatistic() {
         Map<String, Object> response = new LinkedHashMap<String, Object>();
@@ -268,21 +301,43 @@ public class OrderController {
             @RequestParam int year,
             @RequestParam int month) {
         return ResponseEntity.ok(orderService.getStatusPercentageByMonth(year, month));
-    }
-
-    @GetMapping("/status-percentage/yearly")
+    }    @GetMapping("/status-percentage/yearly")
     public ResponseEntity<Map<String, Double>> getStatusPercentageByYear(@RequestParam int year) {
         return ResponseEntity.ok(orderService.getStatusPercentageByYear(year));
     }
+    
     @GetMapping("/list")
-    public ResponseEntity<List<OrderDTO>> findByYearAndMonth(@RequestParam int year, @RequestParam(required = false) Integer month) {
-        return ResponseEntity.ok(orderService.getOrdersByYearAndMonth(year, month));
+    public ResponseEntity<Map<String, Object>> findByYearAndMonth(
+            @RequestParam int year, 
+            @RequestParam(required = false) Integer month,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        Map<String, Object> response = new LinkedHashMap<String, Object>();
+        try {
+            Page<OrderDTO> orderPage = orderService.getOrdersByYearAndMonthPaginated(year, month, page, size);
+            
+            response.put("status", HttpStatus.OK.value());
+            response.put("data", orderPage.getContent());
+            response.put("currentPage", orderPage.getNumber());
+            response.put("totalItems", orderPage.getTotalElements());
+            response.put("totalPages", orderPage.getTotalPages());
+            response.put("hasMore", !orderPage.isLast());
+            
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (Exception e) {
+            response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response.put("message", "Có lỗi xảy ra khi tải danh sách đơn hàng");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
+    
     @GetMapping("/orders-export")
     public void exportOrders(@RequestParam int year, @RequestParam(required = false) Integer month, HttpServletResponse response) throws IOException {
         System.out.println("Exporting orders");
         List<OrderDTO> orders = orderService.getOrdersByYearAndMonth(year, month);
         orderService.exportOrderData(orders, response);
+
     }
     @GetMapping("/orders-history")
     public ResponseEntity<Map<String, Object>> getOrderByUserName(@RequestParam Long userId) {

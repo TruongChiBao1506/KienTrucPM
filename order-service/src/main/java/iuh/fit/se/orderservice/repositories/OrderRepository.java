@@ -1,6 +1,8 @@
 package iuh.fit.se.orderservice.repositories;
 
 import iuh.fit.se.orderservice.entities.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -39,13 +41,17 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     // Đếm tổng số đơn hàng trong năm, nhóm theo trạng thái
     @Query("SELECT o.status, COUNT(o) FROM Order o WHERE YEAR(o.orderDate) = :year GROUP BY o.status")
-    List<Object[]> countOrdersByStatusInYear(@Param("year") int year);
-
-    @Query("SELECT o FROM Order o WHERE YEAR(o.orderDate) = :year AND MONTH(o.orderDate) = :month ORDER BY o.orderDate DESC")
+    List<Object[]> countOrdersByStatusInYear(@Param("year") int year);    @Query("SELECT o FROM Order o WHERE YEAR(o.orderDate) = :year AND MONTH(o.orderDate) = :month ORDER BY o.orderDate DESC")
     List<Order> findByYearAndMonth(@Param("year") int year, @Param("month") int month);
 
     @Query("SELECT o FROM Order o WHERE YEAR(o.orderDate) = :year ORDER BY o.orderDate DESC")
     List<Order> findByYear(@Param("year") int year);
+    
+    @Query("SELECT o FROM Order o WHERE YEAR(o.orderDate) = :year AND MONTH(o.orderDate) = :month ORDER BY o.orderDate DESC")
+    Page<Order> findByYearAndMonthPaginated(@Param("year") int year, @Param("month") int month, Pageable pageable);
+
+    @Query("SELECT o FROM Order o WHERE YEAR(o.orderDate) = :year ORDER BY o.orderDate DESC")
+    Page<Order> findByYearPaginated(@Param("year") int year, Pageable pageable);
 
     @Query("SELECT o FROM Order o WHERE o.userId = :userId ORDER BY o.orderDate DESC")
     List<Order> findOrdersByUserId(@Param("userId") Long userId);

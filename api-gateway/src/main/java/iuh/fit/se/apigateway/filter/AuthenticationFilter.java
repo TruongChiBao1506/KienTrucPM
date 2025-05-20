@@ -42,6 +42,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             "/v3/api-docs/**",
             "/webjars/**",
             "/api/products/glasses",
+            "/api/products/sunglasses",
+            "/api/products/eyeglasses",
             "/api/products/eyeglasses/men",
             "/api/products/eyeglasses/women",
             "/api/products/sunglasses/men",
@@ -59,7 +61,9 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             "/ws",
             "/ws/info",
             "/api/chatbot/chat",
-            "/api/reviews/getReviews"
+            "/api/reviews/getReviews",
+            "/api/orders/orders-export",
+            "/api/carts/"
     );
 
     @Override

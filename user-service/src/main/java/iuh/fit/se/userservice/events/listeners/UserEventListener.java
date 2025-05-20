@@ -6,8 +6,6 @@ import iuh.fit.se.userservice.events.dtos.UserEmailUpdateEvent;
 import iuh.fit.se.userservice.repositories.UserRepository;
 import iuh.fit.se.userservice.events.dtos.UserProfileCreatedEvent;
 import iuh.fit.se.userservice.entities.User;
-import iuh.fit.se.userservice.services.UserIndexService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -20,9 +18,6 @@ public class UserEventListener {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ConcurrentMap<Long, CompletableFuture<Boolean>> emailUpdateFutures=new ConcurrentHashMap<>();;
-
-    @Autowired
-    private UserIndexService userIndexService;
 
     public UserEventListener(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -38,7 +33,6 @@ public class UserEventListener {
                 case "UserProfileCreated":
                     UserProfileCreatedEvent profileEvent = objectMapper.treeToValue(jsonNode.get("data"), UserProfileCreatedEvent.class);
                     handleUserProfileCreated(profileEvent);
-                    userIndexService.addUserToElasticsearch(profileEvent.getUserId());
                     break;
                 case "UserEmailResponse":
                     UserEmailUpdateEvent event = objectMapper.treeToValue(jsonNode.get("data"), UserEmailUpdateEvent.class);
@@ -50,7 +44,6 @@ public class UserEventListener {
                 case "AsyncElasticsearch":
                     Long userId = objectMapper.treeToValue(jsonNode.get("userId"), Long.class);
                     System.out.println("AsyncElasticsearch: " + userId);
-                    userIndexService.addUserToElasticsearch(userId);
                     break;
             }
         } catch (Exception e) {
@@ -69,7 +62,6 @@ public class UserEventListener {
         user.setGender(event.isGender());
 
         userRepository.save(user);
-        userIndexService.addUserToElasticsearch(event.getUserId());
 
     }
     public CompletableFuture<Boolean> waitForEmailUpdate(Long userId) {
