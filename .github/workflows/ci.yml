@@ -421,27 +421,25 @@ jobs:
         run: |
           ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'ENDSSH'
             cd ~/glasses-app
-            
-            # Tạo .env file nếu chưa có
-            if [ ! -f ".env" ]; then
-              cat > .env << EOF
-            DB_PASSWORD=root
-            MONGO_USER=admin
-            MONGO_PASSWORD=password
-            GEMINI_API_KEY=AIzaSyCou-3OOkcnWT9z62pYSS7qeywpccsJHNk
-            EOF
-            fi
-            
-            # Login to Docker Hub
-            echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-            
-            # Pull latest images
-            docker-compose -f docker-compose.prod.yml pull
-            
-            # Deploy hoặc restart các services
-            docker-compose -f docker-compose.prod.yml down
-            docker-compose -f docker-compose.prod.yml up -d
-            
-            # Hiển thị danh sách các containers đang chạy
-            docker ps
+
+          # Tạo .env file nếu chưa có
+          if [ ! -f ".env" ]; then
+            echo "DB_PASSWORD=root" > .env
+            echo "MONGO_USER=admin" >> .env
+            echo "MONGO_PASSWORD=password" >> .env
+            echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+          fi
+      
+          # Login to Docker Hub
+          echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+      
+          # Pull latest images
+          docker-compose -f docker-compose.prod.yml pull
+      
+          # Restart các services
+          docker-compose -f docker-compose.prod.yml down
+          docker-compose -f docker-compose.prod.yml up -d
+      
+          # Hiển thị các containers đang chạy
+          docker ps
           ENDSSH
