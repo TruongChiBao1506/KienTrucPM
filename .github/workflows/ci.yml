@@ -1,0 +1,115 @@
+name: Spring Boot Maven CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Build with Maven
+        run: |
+          # Danh sách các microservices
+          services=("eureka-server" "auth-service" "user-service" "product-service" "order-service" "cart-service" "review-service" "email-service" "notification-service" "chatbot-service" "api-gateway")
+          
+          for service in "${services[@]}"; do
+            if [ -d "$service" ]; then
+              echo "===== Building $service ====="
+              cd $service
+              
+              # Kiểm tra pom.xml tồn tại không
+              if [ -f "pom.xml" ]; then
+                # Nếu có wrapper Maven, sử dụng wrapper
+                if [ -f "mvnw" ]; then
+                  chmod +x mvnw
+                  ./mvnw clean package -DskipTests
+                else
+                  # Sử dụng Maven từ runner
+                  mvn clean package -DskipTests
+                fi
+              else
+                echo "Không tìm thấy pom.xml trong $service"
+                exit 1
+              fi
+              
+              cd ..
+              echo "===== Hoàn thành build $service ====="
+            fi
+          done
+
+      - name: Run tests
+        run: |
+          services=("eureka-server" "auth-service" "user-service" "product-service" "order-service" "cart-service" "review-service" "email-service" "notification-service" "chatbot-service" "api-gateway")
+          
+          for service in "${services[@]}"; do
+            if [ -d "$service" ]; then
+              echo "===== Running tests for $service ====="
+              cd $service
+              
+              if [ -f "pom.xml" ]; then
+                # Nếu có wrapper Maven, sử dụng wrapper
+                if [ -f "mvnw" ]; then
+                  ./mvnw test
+                else
+                  # Sử dụng Maven từ runner
+                  mvn test
+                fi
+              fi
+              
+              cd ..
+              echo "===== Hoàn thành tests cho $service ====="
+            fi
+          done
+      
+      - name: Build Docker images (không push)
+        if: github.event_name == 'push'
+        run: |
+          services=("eureka-server" "auth-service" "user-service" "product-service" "order-service" "cart-service" "review-service" "email-service" "notification-service" "chatbot-service" "api-gateway")
+          
+          for service in "${services[@]}"; do
+            if [ -d "$service" ]; then
+              echo "===== Building Docker image cho $service ====="
+              docker build -t glasses-server/$service:latest ./$service
+              echo "===== Docker image đã được tạo: glasses-server/$service:latest ====="
+            fi
+          done
+
+  # Job tùy chọn: Push Docker images lên registry
+  push-docker-images:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: false  # Mặc định tắt, đổi thành true hoặc github.event_name == 'push' để kích hoạt
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      
+      - name: Build and push Docker images
+        run: |
+          services=("eureka-server" "auth-service" "user-service" "product-service" "order-service" "cart-service" "review-service" "email-service" "notification-service" "chatbot-service" "api-gateway")
+          
+          for service in "${services[@]}"; do
+            if [ -d "$service" ]; then
+              echo "===== Building and pushing $service ====="
+              docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/$service:latest ./$service
+              docker push ${{ secrets.DOCKER_HUB_USERNAME }}/$service:latest
+            fi
+          done
