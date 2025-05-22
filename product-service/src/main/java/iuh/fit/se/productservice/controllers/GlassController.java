@@ -509,8 +509,10 @@ public class GlassController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
-    }        // Tìm kiếm sản phẩm theo từ khóa    @GetMapping("/glasses/search")
-
+    }        
+    
+    // Tìm kiếm sản phẩm theo từ khóa    
+    @GetMapping("/glasses/search")
     @RateLimiter(name = "searchEndpoints", fallbackMethod = "fallbackForSearchEndpoints")
     public ResponseEntity<Map<String, Object>> searchGlasses(
             @RequestParam String keyword,
